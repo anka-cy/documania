@@ -1,0 +1,112 @@
+/*
+  =============================================================================
+  documania — Statuts
+  =============================================================================
+  Badges colorés des statuts de commandes et d'abonnements.
+  Les libellés French sont injectés par les formatters côté JS.
+  =============================================================================
+*/
+
+.badge-status {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  font-size: 0.75rem;
+  padding: 0.35em 0.7em;
+}
+
+/* Commandes */
+.badge-status--PENDING {
+  background-color: #fff4e0;
+  color: #b45e00;
+}
+
+.badge-status--CONFIRMED {
+  background-color: #e5f6ec;
+  color: #1d7a3c;
+}
+
+.badge-status--REJECTED {
+  background-color: #fdecea;
+  color: #a71d2a;
+}
+
+.badge-status--CANCELLED {
+  background-color: #f0f0f2;
+  color: #5a5a6e;
+}
+
+/* Abonnements */
+.badge-status--ACTIVE {
+  background-color: #e5f6ec;
+  color: #1d7a3c;
+}
+
+.badge-status--EXPIRED {
+  background-color: #fdecea;
+  color: #a71d2a;
+}
+
+/* Booléen archive */
+.badge-status--archived-true {
+  background-color: #f0f0f2;
+  color: #5a5a6e;
+}
+
+.badge-status--archived-false {
+  background-color: #e5f6ec;
+  color: #1d7a3c;
+}
+
+/* Tickets */
+.badge-status--OPEN {
+  background-color: #e7f0ff;
+  color: #1d4ed8;
+}
+
+.badge-status--IN_PROGRESS {
+  background-color: #fff4e0;
+  color: #b45e00;
+}
+
+.badge-status--CLOSED {
+  background-color: #f0f0f2;
+  color: #5a5a6e;
+}
+
+/* Priorités tickets */
+.badge-status--LOW {
+  background-color: #f0f0f2;
+  color: #5a5a6e;
+}
+
+.badge-status--MEDIUM {
+  background-color: #e7f0ff;
+  color: #1d4ed8;
+}
+
+.badge-status--HIGH {
+  background-color: #fff4e0;
+  color: #b45e00;
+}
+
+.badge-status--CRITICAL {
+  background-color: #fdecea;
+  color: #a71d2a;
+}
+
+/* Tâches de checklist */
+.badge-status--task-PENDING {
+  background-color: #f0f0f2;
+  color: #5a5a6e;
+}
+
+.badge-status--task-IN_PROGRESS {
+  background-color: #e7f0ff;
+  color: #1d4ed8;
+}
+
+.badge-status--task-COMPLETED {
+  background-color: #e5f6ec;
+  color: #1d7a3c;
+}

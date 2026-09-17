@@ -1,0 +1,51 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Mes commandes</h1>
+      <p class="text-muted mb-0">Suivez l'avancement de vos demandes.</p>
+    </div>
+  </div>
+  <div id="orders-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement de vos commandes…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (isEmpty()) {
+      <div class="empty-state"><p class="mb-0">Aucune commande pour le moment. Découvrez le catalogue !</p></div>
+    } @else {
+      <div class="card">
+        <div class="table-responsive table-container">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr><th>N°</th><th>Offre</th><th class="d-none d-md-table-cell">Date</th><th>Montant</th><th>Statut</th><th class="text-end">Action</th></tr>
+            </thead>
+            <tbody>
+              @for (order of orders().slice(0, visibleCount()); track order.publicId) {
+                <tr>
+                  <td data-label="N°"><a class="fw-semibold" href="#/client/orders/{{ order.publicId }}">{{ order.orderNumber }}</a></td>
+                  <td data-label="Offre">{{ dash(order.offerName || order.serviceName) }}</td>
+                  <td data-label="Date" class="d-none d-md-table-cell">{{ order.createdAt | formatDate }}</td>
+                  <td data-label="Montant" class="text-nowrap">{{ order.price | formatPrice }}</td>
+                  <td data-label="Statut"><span class="{{ order.status | statusBadgeClass }}">{{ order.status | orderStatusLabel }}</span></td>
+                  <td data-label="Action" class="text-end text-nowrap">
+                    @if (ticketFor(order)) {
+                      <a class="btn btn-sm btn-outline-primary me-1" href="#/client/tickets/{{ ticketFor(order) }}">Exigences</a>
+                    }
+                    @if (order.status === 'PENDING') {
+                      <button class="btn btn-sm btn-outline-danger cancel-order-btn"
+                              [attr.data-order-id]="order.publicId"
+                              [attr.data-order-number]="order.orderNumber"
+                              [disabled]="cancellingId() === order.publicId"
+                              (click)="onCancel(order)">Annuler</button>
+                    }
+                  </td>
+                </tr>
+              }
+              <tr #sentinel class="scroll-sentinel" aria-hidden="true" style="height: 1px;"></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    }
+  </div>
+</section>

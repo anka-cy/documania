@@ -1,0 +1,242 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-end justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Offres</h1>
+      <p class="text-muted mb-0">Définissez les offres commerciales de chaque service.</p>
+    </div>
+    <div class="d-flex align-items-center gap-2">
+      <div class="dropdown" id="offers-service-dropdown">
+        <button class="btn btn-outline-secondary btn-sm dropdown-toggle text-truncate" type="button"
+                id="offers-service-btn" data-bs-toggle="dropdown" aria-expanded="false"
+                [disabled]="!!servicesError()">
+          <i class="bi bi-box-seam" aria-hidden="true"></i> {{ selectedServiceName() || 'Choisir un service…' }}
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end" id="offers-service-menu">
+          @for (service of services(); track service.publicId) {
+            <li>
+              <button class="dropdown-item" type="button" [class.active]="service.publicId === selectedServiceId()"
+                      (click)="selectService(service)">{{ service.name }}</button>
+            </li>
+          }
+        </ul>
+      </div>
+        <button class="btn btn-primary btn-sm" id="offers-create-btn" [hidden]="!canCreate" [disabled]="!selectedServiceId()" (click)="openCreate()">
+          <i class="bi bi-plus-lg" aria-hidden="true"></i> Nouvelle offre
+        </button>
+    </div>
+  </div>
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="offers-tab-active" data-bs-toggle="tab" data-bs-target="#offers-pane-active" type="button" role="tab">Actives</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="offers-tab-archived" data-bs-toggle="tab" data-bs-target="#offers-pane-archived" type="button" role="tab" (click)="onArchivedTabClick()">Archivées</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="offers-pane-active" role="tabpanel">
+      <div id="offers-active-content">
+        @if (servicesError()) {
+          <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ servicesError() }}</div>
+        } @else if (activeLoading()) {
+          <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des offres…</span></div>
+        } @else if (!servicesLoaded()) {
+        } @else if (!selectedServiceId()) {
+          <div class="empty-state"><p class="mb-0">Sélectionnez un service pour afficher ses offres.</p></div>
+        } @else if (activeError()) {
+          <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ activeError() }}</div>
+        } @else if (offers().length === 0) {
+          <div class="empty-state"><p class="mb-0">Aucune offre pour ce service. Créez la première offre !</p></div>
+        } @else {
+          <div class="card"><div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Nom</th><th class="d-none d-md-table-cell">Description</th><th>Prix</th><th>Durée</th><th>Utilisateurs</th><th class="d-none d-lg-table-cell">Période commerciale</th><th>État</th><th class="text-end">Actions</th></tr></thead>
+              <tbody>
+                @for (offer of visibleActive(); track offer.publicId) {
+                  <tr>
+                    <td data-label="Nom"><span class="fw-semibold">{{ offer.name }}</span></td>
+                    <td data-label="Description" class="d-none d-md-table-cell">{{ offer.description || '—' }}</td>
+                    <td data-label="Prix" class="text-nowrap">{{ offer.price | formatPrice }}</td>
+                    <td data-label="Durée">{{ offer.durationMonths | formatDuration }}</td>
+                    <td data-label="Utilisateurs">{{ offer.numberOfUsers }}</td>
+                    <td data-label="Période" class="d-none d-lg-table-cell">{{ offer.commercialStartDate | formatDateRange: offer.commercialEndDate }}</td>
+                    <td data-label="État"><span [class]="offer.archived | archivedBadgeClass">{{ offer.archived | archivedLabel }}</span></td>
+                    <td data-label="Actions" class="text-end text-nowrap">
+                      @if (canShowActions) {
+                        @if (offer.archived) {
+                          @if (canRestore) {
+                            <button class="btn btn-sm btn-outline-success restore-offer-btn" (click)="setArchived(offer.publicId, false)">Restaurer</button>
+                          }
+                          @if (canDelete) {
+                            <button class="btn btn-sm btn-outline-danger delete-offer-btn" (click)="removeOffer(offer.publicId)">Supprimer</button>
+                          }
+                        } @else {
+                          @if (canUpdate) {
+                            <button class="btn btn-sm btn-outline-primary edit-offer-btn" (click)="openEdit(offer.publicId)">Modifier</button>
+                          }
+                          @if (canArchive) {
+                            <button class="btn btn-sm btn-outline-warning archive-offer-btn" (click)="setArchived(offer.publicId, true)">Archiver</button>
+                          }
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+                @if (hasMoreActive()) {
+                  <tr #activeSentinel data-sentinel="active" aria-hidden="true" style="height:1px;"><td colspan="8"></td></tr>
+                }
+              </tbody>
+            </table>
+          </div></div>
+        }
+      </div>
+    </div>
+    <div class="tab-pane fade" id="offers-pane-archived" role="tabpanel">
+      <div id="offers-archived-content">
+        @if (archivedLoading()) {
+          <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des offres archivées…</span></div>
+        } @else if (archivedDenied()) {
+          <div class="empty-state"><p class="mb-0">Consultation des archives non autorisée pour ce profil.</p></div>
+        } @else if (archivedError()) {
+          <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ archivedError() }}</div>
+        } @else if (!servicesLoaded() && !selectedServiceId()) {
+        } @else if (servicesLoaded() && !selectedServiceId()) {
+          <div class="empty-state"><p class="mb-0">Sélectionnez un service pour afficher ses offres archivées.</p></div>
+        } @else if (archivedLoaded() && archivedOffers().length === 0) {
+          <div class="empty-state"><p class="mb-0">Aucune offre archivée pour ce service.</p></div>
+        } @else if (archivedLoaded()) {
+          <div class="card"><div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Nom</th><th class="d-none d-md-table-cell">Description</th><th>Prix</th><th>Durée</th><th>Utilisateurs</th><th class="d-none d-lg-table-cell">Période commerciale</th><th>État</th><th class="text-end">Actions</th></tr></thead>
+              <tbody>
+                @for (offer of visibleArchived(); track offer.publicId) {
+                  <tr>
+                    <td data-label="Nom"><span class="fw-semibold">{{ offer.name }}</span></td>
+                    <td data-label="Description" class="d-none d-md-table-cell">{{ offer.description || '—' }}</td>
+                    <td data-label="Prix" class="text-nowrap">{{ offer.price | formatPrice }}</td>
+                    <td data-label="Durée">{{ offer.durationMonths | formatDuration }}</td>
+                    <td data-label="Utilisateurs">{{ offer.numberOfUsers }}</td>
+                    <td data-label="Période" class="d-none d-lg-table-cell">{{ offer.commercialStartDate | formatDateRange: offer.commercialEndDate }}</td>
+                    <td data-label="État"><span [class]="offer.archived | archivedBadgeClass">{{ offer.archived | archivedLabel }}</span></td>
+                    <td data-label="Actions" class="text-end text-nowrap">
+                      @if (canShowActions) {
+                        @if (offer.archived) {
+                          @if (canRestore) {
+                            <button class="btn btn-sm btn-outline-success restore-offer-btn" (click)="setArchived(offer.publicId, false)">Restaurer</button>
+                          }
+                          @if (canDelete) {
+                            <button class="btn btn-sm btn-outline-danger delete-offer-btn" (click)="removeOffer(offer.publicId)">Supprimer</button>
+                          }
+                        } @else {
+                          @if (canUpdate) {
+                            <button class="btn btn-sm btn-outline-primary edit-offer-btn" (click)="openEdit(offer.publicId)">Modifier</button>
+                          }
+                          @if (canArchive) {
+                            <button class="btn btn-sm btn-outline-warning archive-offer-btn" (click)="setArchived(offer.publicId, true)">Archiver</button>
+                          }
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+                @if (hasMoreArchived()) {
+                  <tr #archivedSentinel data-sentinel="archived" aria-hidden="true" style="height:1px;"><td colspan="8"></td></tr>
+                }
+              </tbody>
+            </table>
+          </div></div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale création / édition -->
+  <div class="modal fade" id="offer-modal" tabindex="-1" aria-hidden="true" #offerModal>
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="offer-form" novalidate (ngSubmit)="onFormSubmit()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="offer-modal-title">{{ modalTitle() }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div id="offer-alert">
+              @if (formAlert()) {
+                <div class="alert alert-{{ formAlert()!.type }} py-2" role="alert">{{ formAlert()!.message }}</div>
+              }
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-8">
+                <label class="form-label" for="offer-name">Nom</label>
+                <input class="form-control" id="offer-name" name="name" required maxlength="150"
+                       [disabled]="formBusy()"
+                       [ngModel]="formName()" (ngModelChange)="formName.set($event)"
+                       [class.is-invalid]="!!formErrors['name']" />
+                <div class="form-field-error">{{ formErrors['name'] }}</div>
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label" for="offer-price">Prix (MAD)</label>
+                <input class="form-control" id="offer-price" name="price" type="number" step="0.01" min="0" required
+                       [disabled]="formBusy()"
+                       [ngModel]="formPrice()" (ngModelChange)="formPrice.set($event)"
+                       [class.is-invalid]="!!formErrors['price']" />
+                <div class="form-field-error">{{ formErrors['price'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="offer-duration">Durée (mois)</label>
+                <input class="form-control" id="offer-duration" name="durationMonths" type="number" min="1" required
+                       [disabled]="formBusy()"
+                       [ngModel]="formDuration()" (ngModelChange)="formDuration.set($event)"
+                       [class.is-invalid]="!!formErrors['durationMonths']" />
+                <div class="form-field-error">{{ formErrors['durationMonths'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="offer-users">Utilisateurs inclus</label>
+                <input class="form-control" id="offer-users" name="numberOfUsers" type="number" min="1" required
+                       [disabled]="formBusy()"
+                       [ngModel]="formUsers()" (ngModelChange)="formUsers.set($event)"
+                       [class.is-invalid]="!!formErrors['numberOfUsers']" />
+                <div class="form-field-error">{{ formErrors['numberOfUsers'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="offer-start">Début commerciale</label>
+                <input class="form-control" id="offer-start" name="commercialStartDate" type="date" required
+                       [disabled]="formBusy()"
+                       [ngModel]="formStart()" (ngModelChange)="formStart.set($event)"
+                       [class.is-invalid]="!!formErrors['commercialStartDate']" />
+                <div class="form-field-error">{{ formErrors['commercialStartDate'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="offer-end">Fin commerciale</label>
+                <input class="form-control" id="offer-end" name="commercialEndDate" type="date" required
+                       [disabled]="formBusy()"
+                       [ngModel]="formEnd()" (ngModelChange)="formEnd.set($event)"
+                       [class.is-invalid]="!!formErrors['commercialEndDate']" />
+                <div class="form-field-error">{{ formErrors['commercialEndDate'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="offer-description">Description</label>
+                <textarea class="form-control" id="offer-description" name="description" rows="2" maxlength="1000"
+                          [disabled]="formBusy()"
+                          [ngModel]="formDescription()" (ngModelChange)="formDescription.set($event)"
+                          [class.is-invalid]="!!formErrors['description']"></textarea>
+                <div class="form-field-error">{{ formErrors['description'] }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="offer-submit" [disabled]="formBusy()">
+              @if (formBusy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enregistrement…
+              } @else {
+                Enregistrer
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

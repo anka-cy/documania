@@ -1,0 +1,23 @@
+### Local secrets (NEVER commit) ###
+**/.env
+
+### Build artifacts ###
+**/node_modules/
+**/dist/
+**/target/
+**/.angular/
+
+### IDE ###
+.idea/
+.vscode/
+*.iws
+*.iml
+*.ipr
+
+### OS ###
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+### Logs ###
+*.log

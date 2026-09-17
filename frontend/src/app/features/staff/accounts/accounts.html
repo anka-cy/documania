@@ -1,0 +1,120 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Comptes staff</h1>
+      <p class="text-muted mb-0">Les accès du personnel à l'espace staff.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" (click)="openCreate()"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouveau compte</button>
+  </div>
+  <div id="accounts-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des comptes…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (accounts().length === 0) {
+      <div class="empty-state"><p class="mb-0">Aucun compte staff.</p></div>
+    } @else {
+      <div class="card"><div class="table-responsive table-container">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Nom</th><th>E-mail</th><th>État</th><th class="d-none d-lg-table-cell">Créé le</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            @for (account of visible(); track account.publicId) {
+              <tr>
+                <td data-label="Nom">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="avatar-initials" aria-hidden="true">{{ initials(account.firstName, account.lastName) }}</span>
+                    <span class="fw-semibold">{{ account.firstName }} {{ account.lastName }}</span>
+                    @if (isSelf(account)) {
+                      <span class="badge text-bg-secondary ms-1">vous</span>
+                    }
+                  </div>
+                </td>
+                <td data-label="E-mail">{{ account.email || '—' }}</td>
+                <td data-label="État">
+                  <span class="badge text-bg-{{ account.enabled ? 'success' : 'danger' }}">{{ account.enabled ? 'Actif' : 'Désactivé' }}</span>
+                </td>
+                <td data-label="Créé le" class="d-none d-lg-table-cell small text-muted">{{ account.createdAt | formatDateTime }}</td>
+                <td data-label="Actions" class="text-end text-nowrap">
+                  @if (!isSelf(account)) {
+                    @if (!account.emailVerified) {
+                      <button class="btn btn-sm btn-outline-primary activation-account-btn" (click)="sendActivation(account.publicId)">Envoyer le lien</button>
+                    }
+                    @if (!account.enabled) {
+                      <button class="btn btn-sm btn-outline-success toggle-account-btn" (click)="toggleEnabled(account.publicId, false)">Activer</button>
+                    }
+                    @if (account.enabled) {
+                      <button class="btn btn-sm btn-outline-warning toggle-account-btn" (click)="toggleEnabled(account.publicId, true)">Désactiver</button>
+                    }
+                    <button class="btn btn-sm btn-outline-danger delete-account-btn" (click)="deleteAccount(account.publicId, account.firstName + ' ' + account.lastName)">Supprimer</button>
+                  }
+                </td>
+              </tr>
+            }
+            @if (hasMore()) {
+              <tr #sentinel aria-hidden="true" style="height:1px;"><td colspan="5"></td></tr>
+            }
+          </tbody>
+        </table>
+      </div></div>
+    }
+  </div>
+
+  <!-- Modale de création -->
+  <div class="modal fade" id="account-modal" tabindex="-1" aria-hidden="true" #accountModal>
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="account-form" novalidate (ngSubmit)="onFormSubmit()">
+          <div class="modal-header">
+            <h5 class="modal-title">Nouveau compte staff</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div id="account-alert">
+              @if (formAlert()) {
+                <div class="alert alert-{{ formAlert()!.type }} py-2" role="alert">{{ formAlert()!.message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="account-first-name">Prénom</label>
+              <input class="form-control" id="account-first-name" name="firstName" required maxlength="100"
+                     [disabled]="formBusy()"
+                     [ngModel]="formFirstName()" (ngModelChange)="formFirstName.set($event)"
+                     [class.is-invalid]="!!formErrors['firstName']" />
+              <div class="form-field-error">{{ formErrors['firstName'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="account-last-name">Nom</label>
+              <input class="form-control" id="account-last-name" name="lastName" required maxlength="100"
+                     [disabled]="formBusy()"
+                     [ngModel]="formLastName()" (ngModelChange)="formLastName.set($event)"
+                     [class.is-invalid]="!!formErrors['lastName']" />
+              <div class="form-field-error">{{ formErrors['lastName'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="account-email">Adresse e-mail</label>
+              <input class="form-control" type="email" id="account-email" name="email" autocomplete="off" required maxlength="255"
+                     [disabled]="formBusy()"
+                     [ngModel]="formEmail()" (ngModelChange)="formEmail.set($event)"
+                     [class.is-invalid]="!!formErrors['email']" />
+              <div class="form-field-error">{{ formErrors['email'] }}</div>
+            </div>
+            <p class="small text-muted mb-0">
+              Le compte est créé inactif : envoyez un lien d'activation par e-mail
+              pour que la personne définisse son mot de passe.
+            </p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="account-submit" [disabled]="formBusy()">
+              @if (formBusy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création…
+              } @else {
+                Créer le compte
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

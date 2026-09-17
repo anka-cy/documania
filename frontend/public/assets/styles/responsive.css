@@ -1,0 +1,50 @@
+/*
+  =============================================================================
+  documania — Responsive
+  =============================================================================
+  Ajustements tablette / mobile.
+  Phase 2 : navigation mobile avancée implémentée (Offcanvas, D-026) —
+  sidebar staff et navigation client gérées par les layouts + Bootstrap.
+  =============================================================================
+*/
+
+/* Mobile étroit */
+@media (max-width: 575.98px) {
+  .app-content,
+  .staff-layout__content {
+    padding: var(--space-2);
+  }
+
+  .app-topbar-wrapper {
+    padding: var(--space-2) var(--space-2) 0;
+  }
+
+  .app-topbar {
+    border-radius: var(--radius-md);
+    padding: 0 var(--space-2);
+  }
+
+  .auth-section {
+    padding: var(--space-2);
+  }
+}
+
+/* Tablette : la navbar flottante se rapproche des bords. */
+@media (max-width: 991.98px) {
+  .app-topbar-wrapper {
+    padding: var(--space-2) var(--space-2) 0;
+  }
+}
+
+/* Impression : masque les éléments non pertinents de la facture. */
+@media print {
+  .app-topbar,
+  .app-footer,
+  .staff-layout__sidebar {
+    display: none !important;
+  }
+
+  .invoice-doc {
+    border: none;
+  }
+}

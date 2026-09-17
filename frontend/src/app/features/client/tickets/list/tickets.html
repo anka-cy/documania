@@ -1,0 +1,119 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Mes tickets</h1>
+      <p class="text-muted mb-0">Suivez vos demandes, incidents et personnalisations.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" id="new-ticket-btn" data-bs-toggle="modal" data-bs-target="#new-ticket-modal">
+      <i class="bi bi-plus-lg" aria-hidden="true"></i> Nouveau ticket
+    </button>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <div class="input-group filter-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input class="form-control" id="tickets-search-input" type="search" placeholder="Rechercher un ticket (objet, n° de commande)…"
+             [ngModel]="searchTerm()" (ngModelChange)="onSearchTermChange($event)" />
+    </div>
+    <select class="form-select filter-select" id="tickets-status-filter"
+            [ngModel]="statusTerm()" (ngModelChange)="onStatusTermChange($event)">
+      <option value="">Tous les statuts</option>
+      <option value="OPEN">Ouvert</option>
+      <option value="IN_PROGRESS">En cours</option>
+      <option value="CLOSED">Clôturé</option>
+    </select>
+  </div>
+  <div id="tickets-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite">
+        <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        <span>Chargement de vos tickets…</span>
+      </div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (tickets().length === 0 && !interacted()) {
+      <div class="empty-state"><p class="mb-0">Aucun ticket pour le moment. Créez-en un depuis le catalogue ou vos abonnements.</p></div>
+    } @else if (filtered().length === 0) {
+      <div class="empty-state"><p class="mb-0">{{ searchTerm() ? 'Aucun ticket ne correspond à la recherche.' : 'Aucun ticket.' }}</p></div>
+    } @else {
+      <div class="card"><div class="table-responsive table-container">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Objet</th><th class="d-none d-md-table-cell">Catégorie</th><th>Priorité</th><th class="d-none d-md-table-cell">Date</th><th>Statut</th><th class="text-end">Action</th></tr></thead>
+          <tbody>
+            @for (ticket of visibleTickets(); track ticket.publicId) {
+              <tr>
+                <td data-label="Objet">
+                  <a class="fw-semibold" [href]="'#/client/tickets/' + ticket.publicId">
+                    {{ ticket.subject }} @if ((ticket.unreadCount || 0) > 0) {
+                      <span class="badge rounded-pill text-bg-danger ms-1">{{ ticket.unreadCount }}</span>
+                    }
+                  </a>
+                </td>
+                <td data-label="Catégorie" class="d-none d-md-table-cell"><span class="small">{{ ticket.category | ticketCategoryLabel }}</span></td>
+                <td data-label="Priorité"><span class="{{ ticket.priority | statusBadgeClass }} small">{{ ticket.priority | ticketPriorityLabel }}</span></td>
+                <td data-label="Date" class="d-none d-md-table-cell">{{ ticket.createdAt | formatDate }}</td>
+                <td data-label="Statut"><span class="{{ ticket.status | statusBadgeClass }}">{{ ticket.status | ticketStatusLabel }}</span></td>
+                <td data-label="Action" class="text-end text-nowrap">
+                  <a class="btn btn-sm btn-outline-primary" [href]="'#/client/tickets/' + ticket.publicId">Voir</a>
+                </td>
+              </tr>
+            }
+            <tr #sentinel class="scroll-sentinel" aria-hidden="true" style="height: 1px;"></tr>
+          </tbody>
+        </table>
+      </div></div>
+    }
+  </div>
+
+  <!-- Modale de création de ticket -->
+  <div class="modal fade" id="new-ticket-modal" tabindex="-1" aria-hidden="true" #newTicketModal>
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="new-ticket-form" novalidate (ngSubmit)="onCreateTicket()">
+          <div class="modal-header">
+            <h5 class="modal-title">Nouveau ticket</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div id="new-ticket-alert">
+              @if (alert()) {
+                <div class="alert alert-{{ alert()!.type }} py-2">{{ alert()!.message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="new-ticket-category">Catégorie</label>
+              <select class="form-select" id="new-ticket-category" name="category" required [(ngModel)]="category">
+                <option value="">— Choisir une catégorie —</option>
+                <option value="SERVICE_DOWN">Panne / Incident</option>
+                <option value="MODULE_CUSTOMIZATION">Personnalisation de module</option>
+                <option value="GENERAL">Question générale</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="new-ticket-subject">Objet</label>
+              <input class="form-control" id="new-ticket-subject" name="subject" type="text" maxlength="255" required [(ngModel)]="subject" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="new-ticket-description">Description</label>
+              <textarea class="form-control" id="new-ticket-description" name="description" rows="4" minlength="5" maxlength="5000" required
+                        [(ngModel)]="description" (ngModelChange)="onDescriptionInput($event)"></textarea>
+              <div class="d-flex justify-content-between mt-1">
+                <small class="text-danger" [class.d-none]="!descErrorVisible()" id="new-ticket-error">La description doit contenir au moins 5 caractères.</small>
+                <small class="text-muted ms-auto"><span id="new-ticket-count">{{ descriptionLength() }}</span> / 5000</small>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="new-ticket-submit" [disabled]="busy() || descTooShort()">
+              @if (busy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création…
+              } @else {
+                Créer le ticket
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,20 @@
+<section class="auth-section">
+  <div class="auth-card p-4">
+    <h1 class="h4 mb-3 text-center">Vérification de votre adresse e-mail</h1>
+    <div id="verification-content" class="text-center py-3">
+      @if (state() === 'loading') {
+        <div class="spinner-border text-primary" role="status"></div>
+      } @else if (state() === 'invalid') {
+        <p class="text-muted">Le lien de vérification est invalide ou incomplet.</p>
+        <a class="btn btn-primary" href="#/login">Retour à la connexion</a>
+      } @else if (state() === 'success') {
+        <p class="fw-semibold mb-1 mt-2">Votre adresse e-mail est vérifiée.</p>
+        <p class="text-muted small mb-3">Votre compte est maintenant actif. Vous pouvez vous connecter.</p>
+        <a class="btn btn-primary" href="#/login">Se connecter</a>
+      } @else if (state() === 'error') {
+        <p class="text-muted">{{ errorMessage() }}</p>
+        <a class="btn btn-primary" href="#/login">Retour à la connexion</a>
+      }
+    </div>
+  </div>
+</section>

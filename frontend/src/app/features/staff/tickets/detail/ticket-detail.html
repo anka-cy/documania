@@ -1,0 +1,225 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a href="#/staff/tickets">Tickets</a></li>
+          <li class="breadcrumb-item active" id="ticket-breadcrumb">{{ ticket()?.subject || 'Ticket' }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <div id="ticket-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement du ticket…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (ticket()) {
+      <div class="row g-4">
+        <!-- Colonne principale : checklist / to-do -->
+        <div class="col-lg-8">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span><i class="bi bi-check2-square me-1" aria-hidden="true"></i> Livrables &amp; To-Do</span>
+              <span class="small fw-semibold">{{ progress() }}%</span>
+            </div>
+            <div class="card-body">
+              <div class="progress mb-3" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" [style.width.%]="progress()"
+                     [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              @if (tasks().length === 0) {
+                <p class="text-muted small mb-3">Aucune tâche. Reformulez les exigences du client en tâches concrètes ci-dessous.</p>
+              } @else {
+                <ul class="list-group list-group-flush mb-3">
+                  @for (task of tasks(); track task.publicId) {
+                    <li class="list-group-item d-flex align-items-center gap-2 py-2">
+                      <span class="small flex-grow-1 {{ task.status === 'COMPLETED' ? 'text-decoration-line-through text-muted' : '' }}">{{ task.title }}</span>
+                      <span class="{{ task.status | taskStatusBadgeClass }} small">{{ task.status | ticketTaskStatusLabel }}</span>
+                      @if (!closed()) {
+                        @if (task.status === 'PENDING') {
+                          <button class="btn btn-sm btn-outline-success task-status-btn" type="button" title="Passer à « En cours »"
+                                  (click)="updateTask(task.publicId, 'IN_PROGRESS')">
+                            <i class="bi bi-play-fill" aria-hidden="true"></i>
+                          </button>
+                        } @else if (task.status === 'IN_PROGRESS') {
+                          <button class="btn btn-sm btn-outline-success task-status-btn" type="button" title="Passer à « Terminé »"
+                                  (click)="updateTask(task.publicId, 'COMPLETED')">
+                            <i class="bi bi-check-lg" aria-hidden="true"></i>
+                          </button>
+                        }
+                        <button class="btn btn-sm btn-outline-danger task-delete-btn" type="button" title="Supprimer"
+                                (click)="deleteTask(task.publicId)">
+                          <i class="bi bi-trash" aria-hidden="true"></i>
+                        </button>
+                      }
+                    </li>
+                  }
+                </ul>
+              }
+              @if (!closed()) {
+                <form id="task-form" novalidate (ngSubmit)="onAddTask()">
+                  <div class="input-group">
+                    <input class="form-control" id="task-title" name="title" type="text" maxlength="255"
+                           placeholder="Nouvelle tâche (ex. 1. Configurer l'environnement…)" required
+                           [disabled]="taskBusy()"
+                           [ngModel]="newTaskTitle()" (ngModelChange)="newTaskTitle.set($event)">
+                    <button type="submit" class="btn btn-primary" id="task-submit" [disabled]="taskBusy()">
+                      @if (taskBusy()) {
+                        <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Ajouter…
+                      } @else {
+                        Ajouter
+                      }
+                    </button>
+                  </div>
+                </form>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Colonne latérale : infos + contrôles -->
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-header">Informations</div>
+            <div class="card-body">
+              <dl class="row small mb-0">
+                <dt class="col-sm-5">Client</dt>
+                <dd class="col-sm-7">{{ ticket()?.clientCompanyName || '—' }}</dd>
+                @if (ticket()?.orderNumber) {
+                  <dt class="col-sm-5">Commande</dt>
+                  <dd class="col-sm-7"><a href="#/staff/orders">{{ ticket()?.orderNumber }}</a></dd>
+                }
+                <dt class="col-sm-5">Catégorie</dt>
+                <dd class="col-sm-7">{{ ticket()?.category | ticketCategoryLabel }}</dd>
+                <dt class="col-sm-5">Ouvert le</dt>
+                <dd class="col-sm-7">{{ ticket()?.createdAt | formatDateTime }}</dd>
+              </dl>
+            </div>
+          </div>
+
+          @if (closed()) {
+            <div class="card mb-4">
+              <div class="card-body">
+                <span [class]="ticket()!.status | statusBadgeClass">{{ ticket()?.status | ticketStatusLabel }}</span>
+                <p class="text-muted small mt-2 mb-0">Ce ticket est clôturé : les contrôles sont désactivés.</p>
+              </div>
+            </div>
+          } @else {
+            <div class="card mb-4">
+              <div class="card-header">Contrôles</div>
+              <div class="card-body">
+                <div class="mb-3">
+                  <label class="form-label" for="priority-select">Priorité</label>
+                  <select class="form-select form-select-sm" id="priority-select"
+                          [value]="ticket()?.priority" (change)="onPriorityChange($event)">
+                    @for (p of priorities; track p) {
+                      <option [value]="p">{{ p | ticketPriorityLabel }}</option>
+                    }
+                  </select>
+                </div>
+                <button class="btn btn-sm btn-danger w-100 close-ticket-btn" type="button" (click)="closeTicket()">
+                  <i class="bi bi-lock" aria-hidden="true"></i> Clôturer le ticket
+                </button>
+              </div>
+            </div>
+          }
+
+          @if (admin) {
+            <div class="card mb-4 border-danger">
+              <div class="card-header text-danger">Zone sensible</div>
+              <div class="card-body">
+                <p class="small text-muted mb-2">Suppression définitive du ticket et de tout son contenu (messages, tâches). Action tracée dans les journaux d'audit.</p>
+                <button class="btn btn-sm btn-danger w-100 delete-ticket-btn" type="button" (click)="deleteTicket()">
+                  <i class="bi bi-trash" aria-hidden="true"></i> Supprimer ce ticket
+                </button>
+              </div>
+            </div>
+          }
+        </div>
+      </div>
+
+      <!-- Bouton d'ouverture du chat (toujours disponible, même si le ticket est clôturé) -->
+      <button class="chat-fab js-chat-toggle" type="button" aria-label="Ouvrir la discussion" title="Discussion" (click)="toggleChat()">
+        <i class="bi bi-chat-dots" aria-hidden="true"></i>
+        @if (unreadCount() > 0) {
+          <span class="chat-fab__badge">{{ badgeLabel(unreadCount()) }}</span>
+        }
+      </button>
+
+      <!-- Fenêtre de discussion (type messagerie) -->
+      <div class="chat-window {{ chatOpen() ? 'is-open' : '' }}">
+        <div class="chat-window__header">
+          <span class="fw-semibold"><i class="bi bi-chat-dots me-1" aria-hidden="true"></i> Discussion</span>
+          <button class="btn btn-sm btn-outline-light js-chat-toggle" type="button" aria-label="Fermer la discussion" (click)="toggleChat()">
+            <i class="bi bi-x-lg" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="chat-window__messages" id="chat-messages" #chatMessages>
+          @if (messages().length === 0) {
+            <p class="text-muted small m-3">Aucun message.</p>
+          } @else {
+            @for (msg of messages(); track $index) {
+              <div class="d-flex {{ (msg.authorRole === 'ADMIN' || msg.authorRole === 'STAFF') ? 'justify-content-end' : 'justify-content-start' }} mb-2">
+                <div class="chat-bubble {{ (msg.authorRole === 'ADMIN' || msg.authorRole === 'STAFF') ? 'chat-bubble--staff' : 'chat-bubble--client' }}" style="max-width: 85%;">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <span class="fw-semibold small">{{ msg.authorName }}</span>
+                    <span class="text-muted small ms-auto">{{ msg.createdAt | formatDateTime }}</span>
+                  </div>
+                  <p class="mb-0 small">{{ msg.message }}</p>
+                  @if ((msg.attachments || []).length > 0) {
+                    <div class="d-flex flex-column gap-1 mt-2">
+                      @for (att of (msg.attachments || []); track att.publicId) {
+                        <button type="button" class="attachment-link js-attachment-download"
+                                [title]="'Télécharger ' + att.fileName" (click)="downloadAttachment(att)">
+                          <i class="bi bi-paperclip" aria-hidden="true"></i>
+                          <span class="text-truncate">{{ att.fileName }}</span>
+                          <span class="attachment-link__size">{{ formatFileSize(att.fileSize) }}</span>
+                        </button>
+                      }
+                    </div>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
+        @if (closed()) {
+          <div class="chat-window__footer">
+            <span class="text-muted small">Ce ticket est clôturé : l'envoi de messages est désactivé.</span>
+          </div>
+        } @else {
+          <form class="chat-window__form" id="message-form" novalidate (ngSubmit)="onSendMessage()">
+            <textarea class="form-control form-control-sm" id="message-input" name="message" rows="2" maxlength="5000"
+                      placeholder="Écrire un message au client…" required
+                      [disabled]="sendBusy()"
+                      [ngModel]="messageText()" (ngModelChange)="messageText.set($event)"></textarea>
+            <div class="d-flex flex-column gap-1">
+              <button type="button" class="btn btn-outline-secondary btn-sm js-attach-btn" title="Joindre un fichier" (click)="openFilePicker()">
+                <i class="bi bi-paperclip" aria-hidden="true"></i>
+              </button>
+              <button type="submit" class="btn btn-primary btn-sm" id="send-message-btn" aria-label="Envoyer" [disabled]="sendBusy()">
+                @if (sendBusy()) {
+                  <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                } @else {
+                  <i class="bi bi-send" aria-hidden="true"></i>
+                }
+              </button>
+            </div>
+            <input type="file" id="attach-file-input" class="d-none" multiple #attachInput
+                   [attr.accept]="attachmentAccept" (change)="onFilesSelected($event)">
+          </form>
+          <div id="pending-attachments" class="d-flex flex-wrap gap-2 px-2 pb-2">
+            @for (file of pendingFiles(); track $index) {
+              <span class="badge text-bg-light border d-inline-flex align-items-center gap-1">
+                <i class="bi bi-paperclip" aria-hidden="true"></i>
+                <span class="text-truncate" style="max-width: 180px;">{{ file.name }}</span>
+                <button type="button" class="btn-close btn-close-sm ms-1 js-remove-attach" aria-label="Retirer" (click)="removePending($index)"></button>
+              </span>
+            }
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>

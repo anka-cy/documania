@@ -1,0 +1,125 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Espace client</h1>
+      <p class="text-muted mb-0">Bienvenue sur votre portail Documania.</p>
+    </div>
+    <a class="btn btn-primary" href="#/client/catalogue">Découvrir le catalogue</a>
+  </div>
+
+  <div class="row g-4 mb-4" id="client-dashboard-cards">
+    @if (ordersData()) {
+      <div class="col-sm-6 col-lg-4">
+        <app-stat-card
+          label="Commandes"
+          [value]="ordersData()!.length"
+          [hint]="pendingOrdersCount() + ' en attente'"
+          icon="bi-receipt"
+          variant="primary"
+        />
+      </div>
+    }
+    @if (subscriptionsData()) {
+      <div class="col-sm-6 col-lg-4">
+        <app-stat-card
+          label="Abonnements actifs"
+          [value]="activeSubscriptionsCount()"
+          [hint]="inactiveSubscriptionsCount() + ' inactifs'"
+          icon="bi-stars"
+          variant="success"
+        />
+      </div>
+    }
+    @if (ticketsData()) {
+      <div class="col-sm-6 col-lg-4">
+        <app-stat-card
+          label="Tickets ouverts"
+          [value]="openTicketsCount()"
+          [hint]="ticketsData()!.length + ' au total'"
+          icon="bi-chat-text"
+          variant="warning"
+        />
+      </div>
+    }
+  </div>
+
+  <div id="client-dashboard-alerts" class="mb-3">
+    @if (pendingOrder()) {
+      <div class="alert alert-warning d-flex align-items-center gap-2 mb-0 py-2 small">
+        <i class="bi bi-clock" aria-hidden="true"></i>
+        <span>Commande <strong>{{ pendingOrder()!.orderNumber }}</strong> en attente de confirmation.</span>
+      </div>
+    }
+    @if (expiringSoonCount()) {
+      <div class="alert alert-warning d-flex align-items-center gap-2 mb-0 py-2 small">
+        <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+        <span>{{ expiringSoonCount() }} abonnement{{ expiringSoonCount() > 1 ? 's' : '' }} arrive{{ expiringSoonCount() > 1 ? 'nt' : '' }} à échéance prochainement.</span>
+      </div>
+    }
+  </div>
+
+  <div class="row g-4">
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Dernières commandes</span>
+          <a class="small" href="#/client/orders">Tout voir</a>
+        </div>
+        <div class="card-body" id="client-dashboard-orders">
+          @if (ordersLoading()) {
+            <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des commandes…</span></div>
+          } @else if (ordersError()) {
+            <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ ordersError() }}</div>
+          } @else if (recentOrders().length) {
+            <ul class="list-group list-group-flush">
+              @for (order of recentOrders(); track order.publicId) {
+                <li class="list-group-item d-flex justify-content-between align-items-center px-2 py-1">
+                  <div>
+                    <a class="fw-semibold" href="#/client/orders/{{ order.publicId }}">
+                      Commande {{ order.orderNumber }}
+                    </a>
+                    <div class="small text-muted">{{ order.serviceName || order.offerName }} • {{ order.createdAt | formatDate }}</div>
+                  </div>
+                  <span class="{{ order.status | statusBadgeClass }}">{{ order.status | orderStatusLabel }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="empty-state"><p class="mb-0">Aucune commande pour le moment.</p></div>
+          }
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Mes abonnements</span>
+          <a class="small" href="#/client/subscriptions">Tout voir</a>
+        </div>
+        <div class="card-body" id="client-dashboard-subscriptions">
+          @if (subscriptionsLoading()) {
+            <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des abonnements…</span></div>
+          } @else if (subscriptionsError()) {
+            <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ subscriptionsError() }}</div>
+          } @else if (recentSubscriptions().length) {
+            <ul class="list-group list-group-flush">
+              @for (subscription of recentSubscriptions(); track subscription.publicId) {
+                <li class="list-group-item d-flex justify-content-between align-items-center px-2 py-1">
+                  <div>
+                    <a class="fw-semibold" href="#/client/subscriptions/{{ subscription.publicId }}">
+                      Abonnement
+                    </a>
+                    <div class="small text-muted">du {{ subscription.startDate | formatDate }} au {{ subscription.endDate | formatDate }}</div>
+                  </div>
+                  <span class="{{ subscription.status | statusBadgeClass }}">{{ subscription.status | subscriptionStatusLabel }}</span>
+                </li>
+              }
+            </ul>
+          } @else {
+            <div class="empty-state"><p class="mb-0">Aucun abonnement. Découvrez le catalogue !</p></div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

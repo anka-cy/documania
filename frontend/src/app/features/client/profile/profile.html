@@ -1,0 +1,106 @@
+<section class="py-3">
+  <h1 class="h3 mb-4">Mon profil</h1>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header">Informations du compte</div>
+        <div class="card-body">
+          <div id="profile-alert">
+            @if (profileAlert()) {
+              <div class="alert alert-{{ profileAlert()!.type }} py-2" role="alert">{{ profileAlert()!.message }}</div>
+            }
+          </div>
+          <dl id="profile-info" class="row mb-0">
+            @if (client()) {
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">Prénom</dt>
+                <dd class="mb-0">{{ orDash(client()!.firstName) }}</dd>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">Nom</dt>
+                <dd class="mb-0">{{ orDash(client()!.lastName) }}</dd>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">Entreprise</dt>
+                <dd class="mb-0">{{ orDash(client()!.companyName) }}</dd>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">E-mail</dt>
+                <dd class="mb-0">{{ orDash(client()!.email) }}</dd>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">Téléphone</dt>
+                <dd class="mb-0">{{ orDash(client()!.phone) }}</dd>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">Secteur</dt>
+                <dd class="mb-0">{{ orDash(client()!.sector) }}</dd>
+              </div>
+              <div class="d-flex justify-content-between py-2 border-bottom">
+                <dt class="text-muted mb-0">Adresse</dt>
+                <dd class="mb-0">{{ orDash(client()!.address) }}</dd>
+              </div>
+            }
+          </dl>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header">Mot de passe</div>
+        <div class="card-body">
+          <div id="password-alert">
+            @if (passwordAlert()) {
+              <div class="alert alert-{{ passwordAlert()!.type }} py-2" role="alert">{{ passwordAlert()!.message }}</div>
+            }
+          </div>
+          <form id="password-form" novalidate (ngSubmit)="onSubmit()">
+            <div class="mb-3">
+              <label class="form-label" for="password-current">Mot de passe actuel</label>
+              <div class="position-relative">
+                <input class="form-control" [type]="showCurrent() ? 'text' : 'password'" id="password-current" name="currentPassword" autocomplete="current-password" required
+                       [(ngModel)]="currentPassword" [disabled]="busy()" [class.is-invalid]="!!errors['currentPassword']" />
+                <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                        [attr.data-toggle-password]="'password-current'" aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                        (click)="showCurrent.set(!showCurrent())">{{ showCurrent() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              <div class="form-field-error">{{ errors['currentPassword'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password-new">Nouveau mot de passe</label>
+              <div class="position-relative">
+                <input class="form-control" [type]="showNew() ? 'text' : 'password'" id="password-new" name="newPassword" autocomplete="new-password" required minlength="12" maxlength="72"
+                       [(ngModel)]="newPassword" [disabled]="busy()" [class.is-invalid]="!!errors['newPassword']" />
+                <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                        [attr.data-toggle-password]="'password-new'" aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                        (click)="showNew.set(!showNew())">{{ showNew() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              <div class="form-hint small text-muted">12 caractères minimum.</div>
+              <div class="form-field-error">{{ errors['newPassword'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password-confirmation">Confirmation</label>
+              <div class="position-relative">
+                <input class="form-control" [type]="showConfirm() ? 'text' : 'password'" id="password-confirmation" name="newPasswordConfirmation" autocomplete="new-password" required minlength="12" maxlength="72"
+                       [(ngModel)]="newPasswordConfirmation" [disabled]="busy()" [class.is-invalid]="!!errors['newPasswordConfirmation']" />
+                <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                        [attr.data-toggle-password]="'password-confirmation'" aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                        (click)="showConfirm.set(!showConfirm())">{{ showConfirm() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              <div class="form-field-error">{{ errors['newPasswordConfirmation'] }}</div>
+            </div>
+            <button type="submit" class="btn btn-outline-primary" id="password-submit" [disabled]="busy()">
+              @if (busy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enregistrement…
+              } @else {
+                Changer le mot de passe
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

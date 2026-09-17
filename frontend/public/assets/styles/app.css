@@ -1,0 +1,20 @@
+/*
+  =============================================================================
+  documania — app.css  (point d'entrée global)
+  =============================================================================
+  Ce fichier est la seule feuille de style chargée par index.html.
+  Il importe le reste de l'architecture CSS dans l'ordre (variables → bases →
+  éléments). Bootstrap 5.3 est chargé AVANT app.css dans index.html.
+  =============================================================================
+*/
+
+@import "./variables.css";
+@import "./reset.css";
+@import "./typography.css";
+@import "./layout.css";
+@import "./components.css";
+@import "./auth.css";
+@import "./forms.css";
+@import "./tables.css";
+@import "./status.css";
+@import "./responsive.css";

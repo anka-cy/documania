@@ -1,0 +1,24 @@
+/*
+  =============================================================================
+  assets/styles/auth.css — Styles partagés des pages connexion
+  et inscription (chargé globalement via app.css).
+  =============================================================================
+  Écran partagé : illustration à gauche (inscription), carte de connexion à
+  droite / centrée (connexion).
+  =============================================================================
+*/
+
+.auth-split {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-5);
+  width: 100%;
+  max-width: 980px;
+}
+
+.auth-split__panel {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+}

@@ -1,0 +1,159 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <nav aria-label="breadcrumb">
+        <ol class="breadcrumb mb-1">
+          <li class="breadcrumb-item"><a href="#/client/tickets">Mes tickets</a></li>
+          <li class="breadcrumb-item active" id="ticket-breadcrumb">{{ ticket()?.subject || 'Ticket' }}</li>
+        </ol>
+      </nav>
+    </div>
+  </div>
+  <div id="ticket-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite">
+        <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        <span>Chargement du ticket…</span>
+      </div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (ticket()) {
+      <div class="row g-4">
+        <!-- Colonne principale : discussion -->
+        <div class="col-lg-8">
+          <div class="card mb-4" id="discussion-card">
+            <div class="card-header d-flex justify-content-between align-items-center gap-2">
+              <span class="fw-semibold">{{ ticket()!.subject }}</span>
+              <span class="{{ ticket()!.status | statusBadgeClass }}">{{ ticket()!.status | ticketStatusLabel }}</span>
+            </div>
+            <div class="card-body">
+              <dl class="row small mb-0">
+                <dt class="col-sm-4">Catégorie</dt>
+                <dd class="col-sm-8">{{ ticket()!.category | ticketCategoryLabel }}</dd>
+                <dt class="col-sm-4">Priorité</dt>
+                <dd class="col-sm-8"><span class="{{ ticket()!.priority | statusBadgeClass }} small">{{ ticket()!.priority | ticketPriorityLabel }}</span></dd>
+                @if (ticket()!.orderNumber) {
+                  <dt class="col-sm-4">Commande</dt>
+                  <dd class="col-sm-8"><a [href]="'#/client/orders/' + ticket()!.orderId">{{ ticket()!.orderNumber }}</a></dd>
+                }
+                @if (ticket()!.closedAt) {
+                  <dt class="col-sm-4">Clôturé le</dt>
+                  <dd class="col-sm-8">{{ ticket()!.closedAt | formatDateTime }}</dd>
+                }
+              </dl>
+            </div>
+          </div>
+
+          <!-- Fil de discussion -->
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center gap-2">
+              <span>Discussion</span>
+              @if (unread() > 0) {
+                <span class="badge rounded-pill text-bg-danger">{{ unread() > 99 ? '99+' : unread() }} nouveau{{ unread() > 1 ? 'x' : '' }}</span>
+              }
+            </div>
+            <div class="chat-thread" id="messages-container" #messagesContainer (click)="markRead()" (focusin)="markRead()">
+              @if (messages().length === 0) {
+                <p class="text-muted small mb-0">Aucun message pour le moment.</p>
+              } @else {
+                @for (msg of messages(); track $index) {
+                  <div class="d-flex {{ msg.authorRole === 'CLIENT' ? 'justify-content-end' : 'justify-content-start' }} mb-3">
+                    <div class="chat-bubble {{ msg.authorRole === 'CLIENT' ? 'chat-bubble--client' : 'chat-bubble--staff' }}" style="max-width: 80%;">
+                      <div class="d-flex align-items-center gap-2 mb-1">
+                        <span class="fw-semibold small">{{ msg.authorName }}</span>
+                        <span class="text-muted small">{{ msg.createdAt | formatDateTime }}</span>
+                      </div>
+                      <p class="mb-0 small">{{ msg.message }}</p>
+                      @if ((msg.attachments || []).length > 0) {
+                        <div class="d-flex flex-column gap-1 mt-2">
+                          @for (att of msg.attachments; track $index) {
+                            <button type="button" class="attachment-link js-attachment-download"
+                                    [attr.data-attachment-id]="att.publicId" [attr.data-file-name]="att.fileName"
+                                    [title]="'Télécharger ' + att.fileName" (click)="downloadAttachment(att)">
+                              <i class="bi bi-paperclip" aria-hidden="true"></i>
+                              <span class="text-truncate">{{ att.fileName }}</span>
+                              <span class="attachment-link__size">{{ formatFileSize(att.fileSize) }}</span>
+                            </button>
+                          }
+                        </div>
+                      }
+                    </div>
+                  </div>
+                }
+              }
+            </div>
+            @if (canClose()) {
+              <div class="card-footer">
+                <form id="message-form" novalidate (ngSubmit)="onSendMessage()">
+                  <div class="mb-2">
+                    <textarea class="form-control" id="message-input" rows="2" placeholder="Votre réponse…" maxlength="5000" required
+                              [(ngModel)]="message" [ngModelOptions]="{ standalone: true }" (focus)="markRead()"></textarea>
+                  </div>
+                  <div id="pending-attachments" class="d-flex flex-wrap gap-2 mb-2">
+                    @for (file of pendingFiles(); track $index) {
+                      <span class="badge text-bg-light border d-inline-flex align-items-center gap-1">
+                        <i class="bi bi-paperclip" aria-hidden="true"></i>
+                        <span class="text-truncate" style="max-width: 180px;">{{ file.name }}</span>
+                        <button type="button" class="btn-close btn-close-sm ms-1 js-remove-attach" [attr.data-index]="$index"
+                                aria-label="Retirer" (click)="removePendingAttachment($index)"></button>
+                      </span>
+                    }
+                  </div>
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                      <button type="button" class="btn btn-outline-secondary btn-sm js-attach-btn" title="Joindre un fichier"
+                              (click)="attachFileInput.click()">
+                        <i class="bi bi-paperclip" aria-hidden="true"></i>
+                      </button>
+                      <input type="file" id="attach-file-input" class="d-none" multiple #attachFileInput
+                             [attr.accept]="attachmentAccept" (change)="onFilesPicked($event)" />
+                    </div>
+                    <div class="d-flex gap-2">
+                      <button type="button" class="btn btn-outline-secondary btn-sm" id="close-ticket-btn" (click)="onCloseTicket()">Clôturer le ticket</button>
+                      <button type="submit" class="btn btn-primary btn-sm" id="send-message-btn" [disabled]="sending()">
+                        @if (sending()) {
+                          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi…
+                        } @else {
+                          Envoyer
+                        }
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            }
+          </div>
+        </div>
+
+        <!-- Colonne latérale : checklist -->
+        <div class="col-lg-4">
+          <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <span>Livrables</span>
+              <span class="small fw-semibold">{{ progress() }}%</span>
+            </div>
+            <div class="card-body">
+              <div class="progress mb-3" style="height: 8px;">
+                <div class="progress-bar bg-success" role="progressbar" [style.width.%]="progress()"
+                     [attr.aria-valuenow]="progress()" aria-valuemin="0" aria-valuemax="100"></div>
+              </div>
+              @if (tasks().length === 0) {
+                <p class="text-muted small mb-0">Aucune tâche définie pour le moment.</p>
+              } @else {
+                <ul class="list-unstyled mb-0">
+                  @for (task of tasks(); track $index) {
+                    <li class="d-flex align-items-start gap-2 py-1">
+                      <input class="form-check-input mt-1" type="checkbox" [checked]="task.status === 'COMPLETED'" disabled />
+                      <span class="{{ task.status === 'COMPLETED' ? 'text-decoration-line-through text-muted' : '' }} small">{{ task.title }}</span>
+                      <span class="ms-auto {{ task.status | taskStatusBadgeClass }} small">{{ task.status | ticketTaskStatusLabel }}</span>
+                    </li>
+                  }
+                </ul>
+              }
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>

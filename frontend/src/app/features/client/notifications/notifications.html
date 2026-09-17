@@ -1,0 +1,54 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Notifications</h1>
+      <p class="text-muted mb-0">Retrouvez ici l'ensemble de vos notifications.</p>
+    </div>
+    <button class="btn btn-outline-secondary btn-sm" type="button" id="notifications-mark-all" (click)="markAll()">
+      Tout marquer comme lu
+    </button>
+  </div>
+  <div id="notifications-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite">
+        <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        <span>Chargement des notifications…</span>
+      </div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (items().length === 0) {
+      <div class="empty-state"><p class="mb-0">Aucune notification.</p></div>
+    } @else {
+      <div class="card">
+        <div class="list-group list-group-flush">
+          @for (n of items(); track n.publicId) {
+            <a class="notification-item" [class.is-unread]="!n.read" [href]="n.link | safeUrl" role="button"
+               [attr.data-notif-id]="n.publicId" (click)="open(n, $event)">
+              <span class="notification-item__icon">
+                @switch (n.type) {
+                  @case ('ORDER_CONFIRMED') { <i class="bi bi-check-circle-fill text-success" aria-hidden="true"></i> }
+                  @case ('ORDER_REJECTED') { <i class="bi bi-x-circle-fill text-danger" aria-hidden="true"></i> }
+                  @case ('SUBSCRIPTION_EXPIRED') { <i class="bi bi-hourglass-split text-muted" aria-hidden="true"></i> }
+                  @case ('SUBSCRIPTION_EXPIRING') { <i class="bi bi-clock-history text-warning" aria-hidden="true"></i> }
+                  @case ('PASSWORD_CHANGED') { <i class="bi bi-shield-lock-fill text-primary" aria-hidden="true"></i> }
+                  @case ('NEW_ORDER_PENDING') { <i class="bi bi-bell-fill text-info" aria-hidden="true"></i> }
+                  @default { <i class="bi bi-bell" aria-hidden="true"></i> }
+                }
+              </span>
+              <span class="notification-item__body">
+                <span class="notification-item__title">{{ n.title }}</span>
+                <span class="notification-item__message">{{ n.message }}</span>
+                <span class="notification-item__time">{{ n.createdAt | formatDateTime }}</span>
+              </span>
+            </a>
+          }
+        </div>
+      </div>
+      <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3" id="notifications-pager">
+        <app-pagination idPrefix="notifications" [page]="page()" [totalPages]="totalPages()" [totalElements]="totalElements()"
+                        [pageSize]="20" [itemCount]="items().length" itemLabel="Notifications" variant="text"
+                        (pageChange)="load($event)" />
+      </div>
+    }
+  </div>
+</section>

@@ -1,0 +1,463 @@
+/*
+  =============================================================================
+  documania — Layout
+  =============================================================================
+  Structure des portails : topbar commune, sidebar staff, contenu, footer.
+  Le portail public et le portail client utilisent une simple topbar ;
+  le portail staff utilise une sidebar fixe à gauche (desktop).
+  =============================================================================
+*/
+
+/* ==== Topbar commune (public, client, staff) ==== */
+/* Wrapper qui donne une marge aux bords pour l'effet « navbar flottante ».
+   sticky sur le wrapper : son parent (.staff-layout__body / body) couvre toute
+   la page, donc la topbar reste visible au défilement. */
+.app-topbar-wrapper {
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  padding: var(--space-3) var(--space-3) 0;
+}
+
+.app-topbar {
+  height: var(--navbar-height);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  padding: 0 var(--space-3);
+}
+
+.app-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-heading);
+}
+
+.app-topbar__brand img {
+  height: 28px;
+  width: auto;
+}
+
+/* ==== Layout par défaut (public + client) : contenu pleine largeur ==== */
+.app-content {
+  padding: var(--space-3) var(--space-4);
+  max-width: 1200px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+
+/* ==== Portail staff : sidebar + contenu ==== */
+.staff-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.staff-layout__sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--color-sidebar-gradient-start) 0%, var(--color-sidebar-gradient-end) 100%);
+  color: var(--color-sidebar-text);
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: var(--space-3) 0;
+  border-right: 1px solid var(--color-border);
+  transition: width var(--transition-speed) ease, padding var(--transition-speed) ease;
+}
+
+/* État réduit : la sidebar glisse à gauche ; le bouton topbar réaffiche. */
+.staff-layout.is-sidebar-collapsed .staff-layout__sidebar {
+  width: 0;
+  padding-left: 0;
+  padding-right: 0;
+  border-right: none;
+  overflow: hidden;
+  transition: width var(--transition-speed) ease, padding var(--transition-speed) ease;
+}
+
+.staff-layout.is-sidebar-collapsed .js-sidebar-expand {
+  display: inline-flex;
+}
+
+/* ==== En-tête sidebar : logo + bouton repli ==== */
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--space-3) var(--space-3);
+}
+
+.sidebar-header .app-topbar__brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--color-heading);
+  min-width: 0;
+}
+
+.sidebar-header .app-topbar__brand img {
+  height: 26px;
+  width: auto;
+}
+
+/* ==== Bouton repli (pin) : cercle + point, contour bleu clair sur blanc ==== */
+.js-sidebar-toggle {
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #a9c7e8;
+  color: #5b8cc4;
+  font-size: 0.72rem;
+  line-height: 1;
+  transition: border-color var(--transition-speed) ease, color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+.js-sidebar-toggle:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+/* ==== Bouton expand : dans la topbar, masqué par défaut ==== */
+.js-sidebar-expand {
+  display: none;
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #a9c7e8;
+  color: #5b8cc4;
+  font-size: 0.72rem;
+  line-height: 1;
+  transition: border-color var(--transition-speed) ease, color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+.js-sidebar-expand:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.staff-layout__body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.staff-layout__content {
+  padding: var(--space-3) var(--space-4);
+  flex: 1;
+}
+
+/* ==== Navigation sidebar ==== */
+.sidebar-nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.sidebar-nav__section-title {
+  padding: 0.5rem 0.9rem 0.15rem;
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--color-sidebar-text-muted);
+  font-weight: 600;
+}
+
+.sidebar-nav__link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0 var(--space-2);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: var(--color-sidebar-text);
+  border-radius: 0.3rem;
+  transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+.sidebar-nav__link:hover {
+  background: rgba(0, 0, 0, 0.04);
+  color: var(--color-heading);
+  text-decoration: none;
+}
+
+.sidebar-nav__link.is-active {
+  color: var(--color-sidebar-active-text);
+  background: var(--color-sidebar-active);
+  font-weight: 600;
+}
+
+.sidebar-nav__link i,
+.sidebar-nav__link svg {
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+/* ==== Navigation topbar (liens du portail client) ==== */
+.topbar-nav {
+  display: flex;
+  gap: var(--space-2);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.topbar-nav__link {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.4rem var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-weight: 500;
+}
+
+.topbar-nav__link svg,
+.topbar-nav__link i {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+
+.topbar-nav__link:hover,
+.topbar-nav__link.is-active {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  text-decoration: none;
+}
+
+/* ==== Offcanvas — navigation mobile (Phase 2, D-026) ==== */
+.offcanvas--nav {
+  width: 280px;
+}
+
+.offcanvas--nav .offcanvas-body {
+  padding: var(--space-2) var(--space-3);
+}
+
+/* Liens pleine largeur dans le tiroir ; variante bouton (déconnexion). */
+.offcanvas--nav .topbar-nav__link {
+  width: 100%;
+}
+
+.offcanvas--nav button.topbar-nav__link {
+  background: none;
+  border: 0;
+  text-align: start;
+}
+
+/* Tiroir staff : liens sidebar lisibles hors du fond sombre. */
+.offcanvas--nav .sidebar-nav__link {
+  color: var(--color-text);
+  border-left: none;
+  border-radius: var(--radius-sm);
+}
+
+.offcanvas--nav .sidebar-nav__link:hover {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.offcanvas--nav .sidebar-nav__link.is-active {
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  border-left: none;
+}
+
+.offcanvas--nav .sidebar-nav__section-title {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
+  margin: var(--space-3) 0 var(--space-1);
+}
+
+/* ==== Topbar — petits écrans (Phase 2) ==== */
+/* E-mail utilisateur tronqué pour éviter tout débordement (320–576 px). */
+.app-topbar__user-toggle {
+  max-width: 34vw;
+}
+
+/* Marque topbar (staff mobile) légèrement réduite. */
+.app-topbar .app-topbar__brand.d-lg-none {
+  font-size: 1rem;
+}
+
+/* ==== Accessibilité (Phase 2) ==== */
+/* Lien d'évitement : invisible jusqu'au focus clavier (Tab). */
+.skip-link {
+  position: absolute;
+  top: -48px;
+  left: var(--space-2);
+  z-index: 2000;
+  padding: var(--space-2) var(--space-3);
+  background: var(--color-primary);
+  color: #fff;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  text-decoration: none;
+  transition: top 0.15s ease;
+}
+
+.skip-link:focus {
+  top: 0;
+  color: #fff;
+}
+
+/* Contour visible pour la navigation au clavier. */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ==== Footer ==== */
+.app-footer {
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-3) var(--space-4);
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  margin-top: auto;
+}
+
+/* ==== Cloche de notifications ==== */
+.notification-bell__btn {
+  width: 1.55rem;
+  height: 1.55rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid #a9c7e8;
+  color: #5b8cc4;
+  transition: border-color var(--transition-speed) ease, color var(--transition-speed) ease, background-color var(--transition-speed) ease;
+}
+
+.notification-bell__btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+}
+
+.notification-bell__btn .bi {
+  font-size: 0.85rem;
+  line-height: 1;
+}
+
+.notification-bell__badge {
+  position: absolute;
+  top: -0.22rem;
+  right: -0.28rem;
+  min-width: 1rem;
+  height: 1rem;
+  padding: 0 0.22rem;
+  border-radius: 999px;
+  background: var(--color-danger, #dc3545);
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 700;
+  line-height: 1rem;
+  text-align: center;
+}
+
+.notification-bell__panel {
+  width: 17rem;
+  max-width: calc(100vw - 2rem);
+  padding: 0;
+  overflow: hidden;
+  font-size: 0.85rem;
+}
+
+.notification-bell__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.9rem;
+}
+
+.notification-bell__list {
+  max-height: 16rem;
+  overflow-y: auto;
+}
+
+.notification-item {
+  display: flex;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.notification-item:hover {
+  background: var(--color-surface);
+  text-decoration: none;
+}
+
+.notification-item.is-unread {
+  background: var(--color-primary-light);
+}
+
+.notification-item__icon {
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+
+.notification-item__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  min-width: 0;
+}
+
+.notification-item__title {
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.notification-item__message {
+  color: var(--color-text-muted);
+  font-size: 0.78rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.notification-item__time {
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+/* Brand color for light sidebar */
+.staff-layout__sidebar .app-topbar__brand { color: var(--color-heading); }
+
+/* Sidebar scrollbar discret (fond clair) */
+.staff-layout__sidebar::-webkit-scrollbar { width: 8px; }
+.staff-layout__sidebar::-webkit-scrollbar-thumb { background: #d9d9e6; border-radius: 999px; }
+.staff-layout__sidebar::-webkit-scrollbar-thumb:hover { background: #c4c4d4; }

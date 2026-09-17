@@ -1,0 +1,98 @@
+/*
+  =============================================================================
+  documania — Formulaires
+  =============================================================================
+  Styles des formulaires : champs, libellés, groupes, erreurs.
+  Bootstrap fournit la base ; ici on homogénéise avec le thème.
+  =============================================================================
+*/
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 0.15rem;
+  font-size: 0.78rem;
+}
+
+.form-control,
+.form-select {
+  font-size: 0.82rem;
+}
+
+.form-control:not(textarea),
+.form-select {
+  height: 31px;
+  padding: 0.22rem 0.5rem;
+}
+
+/* Icône de recherche alignée avec le champ compact (31px). */
+.input-group .input-group-text {
+  height: 31px;
+  padding: 0 0.5rem;
+  font-size: 0.8rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+}
+
+textarea.form-control {
+  padding: 0.22rem 0.5rem;
+  line-height: 1.38;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--color-primary);
+}
+
+/* Erreur affichée sous un champ */
+.form-field-error {
+  color: var(--color-danger);
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.form-control.is-invalid,
+.form-select.is-invalid {
+  border-color: var(--color-danger);
+}
+
+.is-invalid:focus {
+  border-color: var(--color-danger);
+}
+
+/* Carte de connexion centrée */
+.auth-card {
+  max-width: 460px;
+  width: 100%;
+  margin: 0 auto;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.auth-section {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - var(--navbar-height));
+  padding: var(--space-4);
+}
+
+.password-toggle {
+  cursor: pointer;
+}
+
+/* Aide sous un champ (ex. règle de complexité du mot de passe) */
+.form-hint {
+  margin-top: 0.25rem;
+}
+
+/* ==== Modales : en-tête et corps compacts ==== */
+.modal-header {
+  padding: 0.7rem 0.9rem;
+  font-size: 0.95rem;
+}
+
+.modal-body {
+  padding: 0.7rem 0.9rem;
+}

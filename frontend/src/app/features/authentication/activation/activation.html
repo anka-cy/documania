@@ -1,0 +1,52 @@
+<section class="auth-section">
+  <div class="auth-card p-4">
+    <div class="text-center mb-4">
+      <h1 class="h4 mb-1">Définissez votre mot de passe</h1>
+      <p class="text-muted small mb-0">Votre compte a été créé par un administrateur.</p>
+    </div>
+
+    <div id="activation-alert">
+      @if (alert()) {
+        <div class="alert alert-{{ alert()!.type }} py-2" role="alert">{{ alert()!.message }}</div>
+      }
+    </div>
+
+    @if (!invalidLink()) {
+      <form id="activation-form" novalidate (ngSubmit)="onSubmit()">
+        @if (done()) {
+          <div class="text-center py-3">
+            <p class="fw-semibold mb-2 mt-2">Votre compte est activé.</p>
+            <p class="text-muted small mb-3">Vous pouvez maintenant vous connecter.</p>
+            <a class="btn btn-primary" href="#/login">Se connecter</a>
+          </div>
+        } @else {
+          <div class="mb-3">
+            <label class="form-label" for="password">Mot de passe</label>
+            <div class="position-relative">
+              <input class="form-control" [type]="showPassword() ? 'text' : 'password'" id="password" name="password" autocomplete="new-password" required minlength="12" maxlength="72"
+                     [(ngModel)]="password" [disabled]="busy()" [class.is-invalid]="!!errors()['password']" />
+              <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                      aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                      (click)="showPassword.set(!showPassword())">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button>
+            </div>
+            <div class="form-hint small text-muted">12 caractères minimum.</div>
+            <div class="form-field-error">{{ errors()['password'] }}</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="password-confirmation">Confirmation</label>
+            <div class="position-relative">
+              <input class="form-control" [type]="showPasswordConfirmation() ? 'text' : 'password'" id="password-confirmation" name="passwordConfirmation" autocomplete="new-password" required minlength="12" maxlength="72"
+                     [(ngModel)]="passwordConfirmation" [disabled]="busy()" [class.is-invalid]="!!errors()['passwordConfirmation']" />
+              <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                      aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                      (click)="showPasswordConfirmation.set(!showPasswordConfirmation())">{{ showPasswordConfirmation() ? 'Masquer' : 'Afficher' }}</button>
+            </div>
+            <div class="form-field-error">{{ errors()['passwordConfirmation'] }}</div>
+          </div>
+
+          <button type="submit" class="btn btn-primary w-100" id="activation-submit" [disabled]="busy()">{{ busy() ? 'Activation…' : 'Activer mon compte' }}</button>
+        }
+      </form>
+    }
+  </div>
+</section>

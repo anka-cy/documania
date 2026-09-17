@@ -1,0 +1,52 @@
+<section class="py-3">
+  <h1 class="h3 mb-4">Tableau de bord</h1>
+
+  <div id="staff-dashboard-kpis" class="row g-4 mb-4">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite">
+        <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        <span>Chargement du tableau de bord…</span>
+      </div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert">
+        <span class="fw-semibold">Erreur :</span> {{ error() }}
+      </div>
+    } @else {
+      @for (card of kpis(); track card.label) {
+        <div class="col-sm-6 col-lg-3">
+          <app-stat-card
+            [label]="card.label"
+            [value]="card.value"
+            [hint]="card.hint"
+            [icon]="card.icon"
+            [variant]="card.variant"
+          />
+        </div>
+      }
+    }
+  </div>
+
+  <div class="card" id="staff-dashboard-audits-card" [style.display]="auditsCardHidden() ? 'none' : ''">
+    <div class="card-header">Derniers événements d'audit</div>
+    <div class="card-body" id="staff-dashboard-audits">
+      @if (recentAudits().length) {
+        <ul class="list-group list-group-flush">
+          @for (event of visibleAudits(); track $index) {
+            <li class="list-group-item d-flex justify-content-between align-items-center px-2 py-1">
+              <div class="text-truncate pe-2">
+                <span class="fw-semibold">{{ event.action || event.entityType || 'Événement' }}</span>
+                <span class="text-muted small d-block text-truncate">{{ event.entityLabel || event.entityPublicId || '' }}</span>
+              </div>
+              <div class="text-end small text-muted flex-shrink-0">
+                {{ event.actorEmail || '' }}<br />{{ event.createdAt | formatDateTime }}
+              </div>
+            </li>
+          }
+          @if (moreAudits()) {
+            <div #auditSentinel class="scroll-sentinel" aria-hidden="true" style="height: 1px"></div>
+          }
+        </ul>
+      }
+    </div>
+  </div>
+</section>

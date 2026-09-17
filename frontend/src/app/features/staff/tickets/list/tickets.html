@@ -1,0 +1,70 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Tickets</h1>
+      <p class="text-muted mb-0">Gérez les demandes, incidents et personnalisations des clients.</p>
+    </div>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <div class="input-group filter-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input class="form-control" id="tickets-search-input" type="search" placeholder="Rechercher (client, n° commande, objet)…"
+             (input)="onSearch($event)" />
+    </div>
+    <select class="form-select filter-select" id="tickets-status-filter" (change)="onStatusChange($event)">
+      <option value="">Tous les statuts</option>
+      <option value="OPEN">Ouvert</option>
+      <option value="IN_PROGRESS">En cours</option>
+      <option value="CLOSED">Clôturé</option>
+    </select>
+    <select class="form-select filter-select" id="tickets-category-filter" (change)="onCategoryChange($event)">
+      <option value="">Toutes les catégories</option>
+      <option value="ORDER_REQUIREMENTS">Exigences commande</option>
+      <option value="MODULE_CUSTOMIZATION">Personnalisation</option>
+      <option value="SERVICE_DOWN">Panne service</option>
+      <option value="GENERAL">Général</option>
+    </select>
+    <select class="form-select filter-select" id="tickets-priority-filter" (change)="onPriorityChange($event)">
+      <option value="">Toutes les priorités</option>
+      <option value="LOW">Basse</option>
+      <option value="MEDIUM">Moyenne</option>
+      <option value="HIGH">Haute</option>
+      <option value="CRITICAL">Critique</option>
+    </select>
+  </div>
+  <div id="tickets-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des tickets…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (tickets().length === 0) {
+      <div class="empty-state"><p class="mb-0">Aucun ticket pour le moment.</p></div>
+    } @else if (filtered().length === 0) {
+      <div class="empty-state"><p class="mb-0">{{ anyFilter() ? 'Aucun ticket ne correspond aux filtres.' : 'Aucun ticket.' }}</p></div>
+    } @else {
+      <div class="card"><div class="table-responsive table-container">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Objet</th><th>Client</th><th class="d-none d-md-table-cell">Catégorie</th><th>Priorité</th><th class="d-none d-md-table-cell">Date</th><th>Statut</th><th class="text-end">Action</th></tr></thead>
+          <tbody>
+            @for (ticket of visible(); track ticket.publicId) {
+              <tr>
+                <td data-label="Objet"><a class="fw-semibold" [href]="ticketHref(ticket.publicId)">{{ ticket.subject }}</a></td>
+                <td data-label="Client">{{ ticket.clientCompanyName || '—' }}</td>
+                <td data-label="Catégorie" class="d-none d-md-table-cell"><span class="small">{{ ticket.category | ticketCategoryLabel }}</span></td>
+                <td data-label="Priorité"><span class="{{ ticket.priority | statusBadgeClass }} small">{{ ticket.priority | ticketPriorityLabel }}</span></td>
+                <td data-label="Date" class="d-none d-md-table-cell">{{ ticket.createdAt | formatDate }}</td>
+                <td data-label="Statut"><span [class]="ticket.status | statusBadgeClass">{{ ticket.status | ticketStatusLabel }}</span></td>
+                <td data-label="Action" class="text-end text-nowrap">
+                  <a class="btn btn-sm btn-outline-primary" [href]="ticketHref(ticket.publicId)">Traiter</a>
+                </td>
+              </tr>
+            }
+            @if (hasMore()) {
+              <tr #sentinel aria-hidden="true" style="height:1px;"><td colspan="7"></td></tr>
+            }
+          </tbody>
+        </table>
+      </div></div>
+    }
+  </div>
+</section>

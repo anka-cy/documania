@@ -1,0 +1,118 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Commandes</h1>
+      <p class="text-muted mb-0">Traitez les demandes des clients.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" id="order-create-btn" [hidden]="!admin" (click)="onOpenCreate()"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouvelle commande</button>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <div class="input-group filter-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input class="form-control" id="orders-search-input" type="search" placeholder="Rechercher une commande (n°, client, offre)…"
+             (input)="onSearch($event)" />
+    </div>
+    <select class="form-select filter-select" id="orders-status-filter" (change)="onStatusChange($event)">
+      <option value="">Tous les statuts</option>
+      <option value="PENDING">En attente</option>
+      <option value="CONFIRMED">Confirmée</option>
+      <option value="REJECTED">Rejetée</option>
+      <option value="CANCELLED">Annulée</option>
+    </select>
+  </div>
+  <div id="orders-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des commandes.</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (items().length === 0) {
+      <div class="empty-state"><p class="mb-0">{{ unfiltered() ? 'Aucune commande enregistrée.' : 'Aucune commande ne correspond à la recherche.' }}</p></div>
+    } @else {
+      <div class="card"><div class="table-responsive table-container">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>N°</th><th>Client</th><th>Offre</th><th class="d-none d-md-table-cell">Date</th><th>Montant</th><th>Statut</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            @for (order of items(); track order.publicId) {
+              <tr>
+                <td data-label="N°"><span class="fw-semibold">{{ order.orderNumber }}</span></td>
+                <td data-label="Client">{{ order.clientCompanyName || '—' }}</td>
+                <td data-label="Offre">{{ order.offerName || order.serviceName || '—' }}</td>
+                <td data-label="Date" class="d-none d-md-table-cell">{{ order.createdAt | formatDate }}</td>
+                <td data-label="Montant" class="text-nowrap">{{ order.price | formatPrice }}</td>
+                <td data-label="Statut"><span [class]="order.status | statusBadgeClass">{{ order.status | orderStatusLabel }}</span></td>
+                <td data-label="Actions" class="text-end text-nowrap">
+                  @if (canProcess(order)) {
+                    <button class="btn btn-sm btn-success confirm-order-btn" (click)="confirmOrder(order.publicId, order.orderNumber)">Confirmer</button>
+                    <button class="btn btn-sm btn-outline-danger reject-order-btn" (click)="rejectOrder(order.publicId, order.orderNumber)">Rejeter</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div></div>
+      <div class="d-flex justify-content-between align-items-center mt-2" id="orders-pager">
+        <app-pagination idPrefix="orders" [page]="page()" [totalPages]="totalPages()" variant="icons" (pageChange)="onPageChange($event)" />
+      </div>
+    }
+  </div>
+
+  <!-- Modale de création de commande pour un client -->
+  <div class="modal fade" id="order-modal" tabindex="-1" aria-hidden="true" #orderModal>
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="order-form" novalidate (ngSubmit)="onFormSubmit()">
+          <div class="modal-header">
+            <h5 class="modal-title">Nouvelle commande</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div id="order-alert">
+              @if (formAlert()) {
+                <div class="alert alert-{{ formAlert()!.type }} py-2" role="alert">{{ formAlert()!.message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="order-client">Client</label>
+              <select class="form-select" id="order-client" name="clientId" required
+                      [disabled]="formBusy()"
+                      [ngModel]="clientId()" (ngModelChange)="clientId.set($event)">
+                <option value="">— Choisir un client —</option>
+                @for (client of formClients(); track client.publicId) {
+                  <option [value]="client.publicId">{{ client.companyName }} ({{ client.email || '' }})</option>
+                }
+              </select>
+              <div class="form-field-error"></div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="order-offer">Offre</label>
+              <select class="form-select" id="order-offer" name="offerId" required
+                      [disabled]="formBusy() || offersEmpty()"
+                      [ngModel]="offerId()" (ngModelChange)="offerId.set($event)">
+                @if (offersEmpty()) {
+                  <option value="">Aucune offre disponible</option>
+                } @else {
+                  <option value="">— Choisir une offre —</option>
+                  @for (offer of formOffers(); track offer.publicId) {
+                    <option [value]="offer.publicId">{{ offer.name }} — {{ offer._serviceName || '' }} — {{ offer.price | formatPrice }}</option>
+                  }
+                }
+              </select>
+              <div class="form-field-error"></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="order-submit" [disabled]="formBusy()">
+              @if (formBusy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création…
+              } @else {
+                Créer et activer
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

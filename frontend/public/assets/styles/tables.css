@@ -1,0 +1,152 @@
+/*
+  =============================================================================
+  documania — Tableaux
+  =============================================================================
+  Tableaux denses, alignés et responsives (défilement horizontal sur mobile).
+  Bootstrap fournit .table ; ici on ajuste pour une lecture dense.
+  =============================================================================
+*/
+
+.table {
+  margin-bottom: 0;
+}
+
+.table th,
+.table td {
+  padding: 0.32rem 0.5rem;
+}
+
+.table thead th {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  padding: 0.35rem 0.5rem;
+}
+
+.table tbody td {
+  vertical-align: middle;
+}
+
+/* Boutons d'action compacts dans les cellules de tableau. */
+.table .btn-sm {
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+/* Espacement entre boutons d'action在同一 cellule. */
+.table td .btn + .btn {
+  margin-left: 0.35rem;
+}
+
+/* Conteneur autorisant le défilement horizontal sur petits écrans */
+.table-responsive,
+.table-container {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.table-responsive .table,
+.table-container .table {
+  margin-bottom: 0;
+}
+
+/* Zébrures légères pour une meilleure lisibilité (desktop). */
+.table tbody tr:nth-child(even) {
+  background: rgba(52, 152, 219, 0.04);
+}
+
+.table-hover tbody tr:hover {
+  --bs-table-hover-bg: rgba(52, 152, 219, 0.06);
+}
+
+/* ==== Mobile : chaque ligne devient une carte empilée ==== */
+@media (max-width: 767.98px) {
+  .table-responsive,
+  .table-container {
+    overflow: visible;
+    background: transparent;
+    border: 0;
+  }
+
+  .table-responsive > .table,
+  .table-container > .table {
+    display: block;
+    width: 100%;
+  }
+
+  .table-responsive > .table > thead,
+  .table-container > .table > thead {
+    display: none;
+  }
+
+  .table-responsive .d-none.d-md-table-cell,
+  .table-responsive .d-none.d-lg-table-cell,
+  .table-container .d-none.d-md-table-cell,
+  .table-container .d-none.d-lg-table-cell {
+    display: flex !important;
+  }
+
+  .table-responsive > .table > tbody,
+  .table-container > .table > tbody {
+    display: block;
+  }
+
+  .table-responsive > .table > tbody > tr,
+  .table-container > .table > tbody > tr {
+    display: block;
+    background: var(--color-surface);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: var(--space-3);
+    margin-bottom: var(--space-3);
+  }
+
+  .table-responsive > .table > tbody > tr > td,
+  .table-container > .table > tbody > tr > td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: var(--space-3);
+    padding: 0.4rem 0;
+    border-bottom: 1px dashed var(--color-border);
+    text-align: right;
+  }
+
+  /* Dernière ligne de chaque carte : pas de séparateur, boutons alignés à droite. */
+  .table-responsive > .table > tbody > tr > td:last-child,
+  .table-container > .table > tbody > tr > td:last-child {
+    border-bottom: 0;
+    padding-bottom: 0.15rem;
+  }
+
+  .table-responsive > .table > tbody > tr > td[data-label]::before,
+  .table-container > .table > tbody > tr > td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-text-muted);
+    text-align: left;
+    flex-shrink: 0;
+    align-self: flex-start;
+    padding-top: 0.25rem;
+  }
+
+  /* Cellule d'actions : la valeur occupe toute la ligne, boutons compactés. */
+  .table-responsive > .table > tbody > tr > td:last-child,
+  .table-container > .table > tbody > tr > td:last-child {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: var(--space-2);
+  }
+
+  .table-responsive > .table > tbody > tr > td:last-child::before,
+  .table-container > .table > tbody > tr > td:last-child::before {
+    flex-basis: 100%;
+  }
+}

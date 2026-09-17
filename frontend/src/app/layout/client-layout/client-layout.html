@@ -1,0 +1,70 @@
+<a class="skip-link" href="#layout-content">Aller au contenu</a>
+<div class="app-topbar-wrapper">
+  <header class="app-topbar">
+    <div class="d-flex align-items-center w-100 gap-3">
+      <button class="btn btn-outline-secondary btn-sm d-md-none" type="button"
+              data-bs-toggle="offcanvas" data-bs-target="#client-nav-drawer"
+              aria-controls="client-nav-drawer" aria-expanded="false"
+              aria-label="Ouvrir le menu de navigation">
+        <i class="bi bi-list" aria-hidden="true"></i>
+      </button>
+      <a href="#/" class="app-topbar__brand me-auto">
+        <img src="assets/images/logo.png" alt="Logo Documania" />
+        <span>Documania</span>
+      </a>
+      <nav class="topbar-nav d-none d-md-flex" aria-label="Navigation client">
+        @for (link of navLinks; track link.href) {
+          <a class="topbar-nav__link" [class.is-active]="isActive(link.href)" href="{{ link.href }}"><i class="bi {{ link.icon }}" aria-hidden="true"></i><span>{{ link.label }}</span></a>
+        }
+      </nav>
+      <div class="d-flex align-items-center gap-2">
+        <div id="notification-bell-container">
+          <app-client-notification-bell />
+        </div>
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary btn-sm dropdown-toggle app-topbar__user-toggle text-truncate" type="button"
+                  data-bs-toggle="dropdown" aria-expanded="false">
+            {{ email }}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end">
+            <li><a class="dropdown-item" href="#/client/profile">Mon profil</a></li>
+            <li><hr class="dropdown-divider"></li>
+            <li><button class="dropdown-item text-danger js-logout" type="button">Se déconnecter</button></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </header>
+</div>
+<main id="layout-content" class="app-content">
+  <router-outlet />
+</main>
+<footer class="app-footer text-center">
+  © {{ year }} Documania — Espace client
+</footer>
+<div class="offcanvas offcanvas-start offcanvas--nav" tabindex="-1" id="client-nav-drawer"
+     aria-labelledby="client-nav-drawer-label">
+  <div class="offcanvas-header border-bottom">
+    <div class="app-topbar__brand" id="client-nav-drawer-label">
+      <img src="assets/images/logo.png" alt="Logo Documania" />
+      <span>Documania</span>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+  </div>
+  <div class="offcanvas-body">
+    <nav aria-label="Navigation client mobile">
+      @for (link of navLinks; track link.href) {
+        <a class="topbar-nav__link" [class.is-active]="isActive(link.href)" href="{{ link.href }}">
+          <i class="bi {{ link.icon }}" aria-hidden="true"></i><span>{{ link.label }}</span>
+        </a>
+      }
+    </nav>
+    <hr class="my-3">
+    <a class="topbar-nav__link" href="#/client/profile">
+      <i class="bi bi-person" aria-hidden="true"></i><span>Mon profil</span>
+    </a>
+    <button class="topbar-nav__link text-danger js-logout" type="button">
+      <i class="bi bi-box-arrow-right" aria-hidden="true"></i><span>Se déconnecter</span>
+    </button>
+  </div>
+</div>

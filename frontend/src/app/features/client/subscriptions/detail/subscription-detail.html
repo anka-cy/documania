@@ -1,0 +1,77 @@
+<section class="py-3">
+  <nav aria-label="Fil d'Ariane" class="mb-3 small">
+    <a href="#/client/subscriptions">Mes abonnements</a> <span class="text-muted">/</span>
+    <span id="subscription-breadcrumb" class="text-muted">Abonnement</span>
+  </nav>
+  <div id="subscription-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement de l'abonnement…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (notFound()) {
+      <div class="empty-state"><p class="mb-0">Cet abonnement est introuvable ou ne vous appartient pas.</p></div>
+    } @else {
+      @if (subscription(); as s) {
+      @let cp = currentPeriod(s);
+      @let periods = s.periods || [];
+      <div class="card mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span class="fw-semibold">{{ cp?.offerName || 'Abonnement' }}</span>
+          <span class="{{ s.status | statusBadgeClass }}">{{ s.status | subscriptionStatusLabel }}</span>
+        </div>
+        <div class="card-body">
+          <dl class="row mb-0">
+            <dt class="col-sm-4">Service</dt>
+            <dd class="col-sm-8">{{ dash(cp?.serviceName) }}</dd>
+            <dt class="col-sm-4">Durée par période</dt>
+            <dd class="col-sm-8">{{ cp?.durationMonths | formatDuration }}</dd>
+            <dt class="col-sm-4">Utilisateurs inclus</dt>
+            <dd class="col-sm-8">{{ numOrDash(cp?.numberOfUsers) }}</dd>
+            <dt class="col-sm-4">Montant périodique</dt>
+            <dd class="col-sm-8 fw-semibold">{{ (cp ? cp.price : null) | formatPrice }}</dd>
+            <dt class="col-sm-4">Période de couverture</dt>
+            <dd class="col-sm-8">du {{ s.startDate | formatDate }} au {{ s.endDate | formatDate }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">Historique des périodes</div>
+        <div class="table-responsive table-container">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Période</th>
+                <th>Début</th>
+                <th>Fin</th>
+                <th>Montant</th>
+                <th>Type</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (period of periods; track period.periodNumber) {
+                <tr>
+                  <td data-label="Période">Période {{ period.periodNumber }}</td>
+                  <td data-label="Début">{{ period.startDate | formatDate }}</td>
+                  <td data-label="Fin">{{ period.endDate | formatDate }}</td>
+                  <td data-label="Montant">{{ period.price | formatPrice }}</td>
+                  <td data-label="Type">
+                    @switch (period.periodNumber) {
+                      @case (1) { <span class="badge text-bg-primary">Création</span> }
+                      @default { <span class="badge text-bg-info">Renouvellement</span> }
+                    }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <a class="btn btn-outline-secondary" href="#/client/subscriptions">Retour aux abonnements</a>
+      </div>
+      }
+    }
+  </div>
+</section>

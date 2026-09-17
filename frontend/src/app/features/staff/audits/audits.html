@@ -1,0 +1,103 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Journal d'audit</h1>
+      <p class="text-muted mb-0">Recherchez et filtrez les événements sensibles.</p>
+    </div>
+    <button class="btn btn-outline-secondary btn-sm" type="button" id="audits-reset-btn" (click)="onReset()">Réinitialiser</button>
+  </div>
+
+  <div class="card mb-4">
+    <div class="card-header d-flex align-items-center gap-2">
+      <i class="bi bi-funnel" aria-hidden="true"></i>
+      <span>Filtres</span>
+    </div>
+    <div class="card-body">
+      <div class="row g-2">
+        <div class="col-md-5">
+          <div class="input-group">
+            <span class="input-group-text"><i class="bi bi-search" aria-hidden="true"></i></span>
+            <input type="search" class="form-control" id="audits-search-input"
+                   placeholder="Rechercher (acteur, entité, motif)…" autocomplete="off"
+                   [ngModel]="query()" (ngModelChange)="onSearchInput($event)">
+          </div>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="audits-action-filter" aria-label="Filtrer par type d'action"
+                  [ngModel]="action()" (ngModelChange)="onActionChange($event)">
+            <option value="">Toutes les actions</option>
+            @for (actionOption of actionOptions; track actionOption) {
+              <option [value]="actionOption">{{ actionLabel(actionOption) }}</option>
+            }
+          </select>
+        </div>
+        <div class="col-md-3">
+          <select class="form-select" id="audits-type-filter" aria-label="Filtrer par type d'entité"
+                  [ngModel]="entityType()" (ngModelChange)="onEntityTypeChange($event)">
+            <option value="">Tous les types</option>
+            @for (typeOption of entityTypeOptions; track typeOption) {
+              <option [value]="typeOption">{{ typeOption }}</option>
+            }
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="audits-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite">
+        <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+        <span>Chargement du journal d'audit…</span>
+      </div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert">
+        <span class="fw-semibold">Erreur :</span> {{ error() }}
+      </div>
+    } @else if (!items().length) {
+      <div class="empty-state">
+        <p class="mb-0">Aucun événement ne correspond à ces critères.</p>
+      </div>
+    } @else {
+      <div class="card">
+        <div class="card-header d-flex flex-wrap align-items-center justify-content-between gap-2">
+          <span>Résultats</span>
+          <span class="text-muted small">Événements {{ rangeStart() }}–{{ rangeEnd() }} sur {{ totalElements() }}</span>
+        </div>
+        <div class="table-responsive table-container">
+          <table class="table table-hover align-middle mb-0">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Acteur</th>
+                <th>Action</th>
+                <th class="d-none d-md-table-cell">Entité</th>
+                <th>Motif</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of items(); track $index) {
+                <tr>
+                  <td data-label="Date" class="text-nowrap small">{{ event.createdAt | formatDateTime }}</td>
+                  <td data-label="Acteur">{{ dash(event.actorEmail) }}<span class="text-muted small"> ({{ event.actorRole || '' }})</span></td>
+                  <td data-label="Action"><span class="fw-semibold">{{ actionLabel(event.action) }}</span></td>
+                  <td data-label="Entité" class="d-none d-md-table-cell">{{ dash(event.entityLabel || event.entityType) }}<span class="text-muted small"> ({{ event.entityType || '' }})</span></td>
+                  <td data-label="Motif" class="small text-muted">{{ dash(event.reason) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        <div class="card-footer d-flex flex-wrap align-items-center justify-content-between gap-2" id="audits-pager">
+          <app-pagination
+            idPrefix="audits"
+            [page]="page()"
+            [totalPages]="totalPages()"
+            variant="text"
+            (pageChange)="onPage($event)"
+          />
+        </div>
+      </div>
+    }
+  </div>
+</section>

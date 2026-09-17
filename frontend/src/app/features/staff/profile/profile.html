@@ -1,0 +1,115 @@
+<section class="py-3">
+  <h1 class="h3 mb-4">Mon profil</h1>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header">Informations du compte</div>
+        <div class="card-body">
+          <div id="profile-alert">
+            @if (profileAlert()) {
+              <div class="alert alert-{{ profileAlert()!.type }} py-2" role="alert">{{ profileAlert()!.message }}</div>
+            }
+          </div>
+          <form id="profile-form" novalidate (ngSubmit)="onProfileSubmit()">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="profile-first-name">Prénom</label>
+                <input class="form-control" id="profile-first-name" name="firstName" required maxlength="100"
+                       [disabled]="profileBusy()"
+                       [ngModel]="firstName()" (ngModelChange)="firstName.set($event)"
+                       [class.is-invalid]="!!profileErrors['firstName']" />
+                <div class="form-field-error">{{ profileErrors['firstName'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="profile-last-name">Nom</label>
+                <input class="form-control" id="profile-last-name" name="lastName" required maxlength="100"
+                       [disabled]="profileBusy()"
+                       [ngModel]="lastName()" (ngModelChange)="lastName.set($event)"
+                       [class.is-invalid]="!!profileErrors['lastName']" />
+                <div class="form-field-error">{{ profileErrors['lastName'] }}</div>
+              </div>
+              @if (email() !== null) {
+                <div class="col-12">
+                  <label class="form-label" for="profile-email">Adresse e-mail</label>
+                  <input class="form-control" id="profile-email" [value]="email()" disabled />
+                </div>
+              }
+            </div>
+            <div class="mt-3">
+              <button type="submit" class="btn btn-primary" id="profile-submit" [disabled]="profileBusy()">
+                @if (profileBusy()) {
+                  <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enregistrement…
+                } @else {
+                  Enregistrer
+                }
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header">Mot de passe</div>
+        <div class="card-body">
+          <div id="password-alert">
+            @if (passwordAlert()) {
+              <div class="alert alert-{{ passwordAlert()!.type }} py-2" role="alert">{{ passwordAlert()!.message }}</div>
+            }
+          </div>
+          <form id="password-form" novalidate (ngSubmit)="onPasswordSubmit()">
+            <div class="mb-3">
+              <label class="form-label" for="password-current">Mot de passe actuel</label>
+              <div class="position-relative">
+                <input class="form-control" [type]="showCurrent() ? 'text' : 'password'" id="password-current" name="currentPassword" autocomplete="current-password" required
+                       [disabled]="passwordBusy()"
+                       [ngModel]="currentPassword()" (ngModelChange)="currentPassword.set($event)"
+                       [class.is-invalid]="!!passwordErrors['currentPassword']" />
+                <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                        aria-label="Afficher ou masquer le mot de passe"
+                        (click)="showCurrent.set(!showCurrent())">{{ showCurrent() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              <div class="form-field-error">{{ passwordErrors['currentPassword'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password-new">Nouveau mot de passe</label>
+              <div class="position-relative">
+                <input class="form-control" [type]="showNew() ? 'text' : 'password'" id="password-new" name="newPassword" autocomplete="new-password" required minlength="12" maxlength="72"
+                       [disabled]="passwordBusy()"
+                       [ngModel]="newPassword()" (ngModelChange)="newPassword.set($event)"
+                       [class.is-invalid]="!!passwordErrors['newPassword']" />
+                <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                        aria-label="Afficher ou masquer le mot de passe"
+                        (click)="showNew.set(!showNew())">{{ showNew() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              <div class="form-hint small text-muted">12 caractères minimum.</div>
+              <div class="form-field-error">{{ passwordErrors['newPassword'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="password-confirmation">Confirmation</label>
+              <div class="position-relative">
+                <input class="form-control" [type]="showConfirm() ? 'text' : 'password'" id="password-confirmation" name="newPasswordConfirmation" autocomplete="new-password" required minlength="12" maxlength="72"
+                       [disabled]="passwordBusy()"
+                       [ngModel]="newPasswordConfirmation()" (ngModelChange)="newPasswordConfirmation.set($event)"
+                       [class.is-invalid]="!!passwordErrors['newPasswordConfirmation']" />
+                <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                        aria-label="Afficher ou masquer le mot de passe"
+                        (click)="showConfirm.set(!showConfirm())">{{ showConfirm() ? 'Masquer' : 'Afficher' }}</button>
+              </div>
+              <div class="form-field-error">{{ passwordErrors['newPasswordConfirmation'] }}</div>
+            </div>
+            <button type="submit" class="btn btn-outline-primary" id="password-submit" [disabled]="passwordBusy()">
+              @if (passwordBusy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enregistrement…
+              } @else {
+                Changer le mot de passe
+              }
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

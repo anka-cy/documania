@@ -1,0 +1,107 @@
+<section class="auth-section">
+  <div class="auth-split">
+    <div class="auth-split__panel">
+      <div class="auth-card p-4">
+        @if (registered()) {
+          <div class="text-center py-4">
+            <h1 class="h4 mb-3">Compte créé !</h1>
+            <p class="mb-4">Un e-mail de vérification vous a été envoyé à <strong>{{ registeredEmail() }}</strong>.</p>
+            <p class="text-muted small mb-0">Cliquez sur le lien reçu pour activer votre compte, puis connectez-vous.</p>
+            <a class="btn btn-primary mt-3" href="#/login">Aller à la connexion</a>
+          </div>
+        } @else {
+          <div class="text-center mb-4">
+            <h1 class="h4 mb-1">Créer un compte client</h1>
+            <p class="text-muted small mb-0">
+              Accédez au catalogue, passez commande et suivez vos abonnements.
+            </p>
+          </div>
+
+          <div id="register-alert">
+            @if (alert()) {
+              <div class="alert alert-{{ alert()!.type }} py-2" role="alert">{{ alert()!.message }}</div>
+            }
+          </div>
+
+          <form id="register-form" novalidate (ngSubmit)="onSubmit()">
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="first-name">Prénom</label>
+                <input class="form-control" id="first-name" name="firstName" autocomplete="given-name" required maxlength="100"
+                       [(ngModel)]="firstName" [disabled]="busy()" [class.is-invalid]="!!errors()['firstName']" />
+                <div class="form-field-error">{{ errors()['firstName'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="last-name">Nom</label>
+                <input class="form-control" id="last-name" name="lastName" autocomplete="family-name" required maxlength="100"
+                       [(ngModel)]="lastName" [disabled]="busy()" [class.is-invalid]="!!errors()['lastName']" />
+                <div class="form-field-error">{{ errors()['lastName'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="company-name">Entreprise</label>
+                <input class="form-control" id="company-name" name="companyName" autocomplete="organization" required maxlength="200" placeholder="Nom de votre société"
+                       [(ngModel)]="companyName" [disabled]="busy()" [class.is-invalid]="!!errors()['companyName']" />
+                <div class="form-field-error">{{ errors()['companyName'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="email">Adresse e-mail</label>
+                <input class="form-control" type="email" id="email" name="email" autocomplete="username" required maxlength="255"
+                       [(ngModel)]="email" [disabled]="busy()" [class.is-invalid]="!!errors()['email']" />
+                <div class="form-field-error">{{ errors()['email'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="phone">Téléphone <span class="text-muted">(optionnel)</span></label>
+                <input class="form-control" id="phone" name="phone" autocomplete="tel" maxlength="30"
+                       [(ngModel)]="phone" [disabled]="busy()" [class.is-invalid]="!!errors()['phone']" />
+                <div class="form-field-error">{{ errors()['phone'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="sector">Secteur <span class="text-muted">(optionnel)</span></label>
+                <input class="form-control" id="sector" name="sector" maxlength="100"
+                       [(ngModel)]="sector" [disabled]="busy()" [class.is-invalid]="!!errors()['sector']" />
+                <div class="form-field-error">{{ errors()['sector'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="address">Adresse <span class="text-muted">(optionnel)</span></label>
+                <input class="form-control" id="address" name="address" autocomplete="street-address" maxlength="250"
+                       [(ngModel)]="address" [disabled]="busy()" [class.is-invalid]="!!errors()['address']" />
+                <div class="form-field-error">{{ errors()['address'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="password">Mot de passe</label>
+                <div class="position-relative">
+                  <input class="form-control" [type]="showPassword() ? 'text' : 'password'" id="password" name="password" autocomplete="new-password" required minlength="12" maxlength="72"
+                         [(ngModel)]="password" [disabled]="busy()" [class.is-invalid]="!!errors()['password']" />
+                  <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                          aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                          (click)="showPassword.set(!showPassword())">{{ showPassword() ? 'Masquer' : 'Afficher' }}</button>
+                </div>
+                <div class="form-hint small text-muted">12 caractères minimum.</div>
+                <div class="form-field-error">{{ errors()['password'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="password-confirmation">Confirmation</label>
+                <div class="position-relative">
+                  <input class="form-control" [type]="showPasswordConfirmation() ? 'text' : 'password'" id="password-confirmation" name="passwordConfirmation" autocomplete="new-password" required minlength="12" maxlength="72"
+                         [(ngModel)]="passwordConfirmation" [disabled]="busy()" [class.is-invalid]="!!errors()['passwordConfirmation']" />
+                  <button type="button" class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                          aria-label="Afficher ou masquer le mot de passe" [disabled]="busy()"
+                          (click)="showPasswordConfirmation.set(!showPasswordConfirmation())">{{ showPasswordConfirmation() ? 'Masquer' : 'Afficher' }}</button>
+                </div>
+                <div class="form-field-error">{{ errors()['passwordConfirmation'] }}</div>
+              </div>
+            </div>
+
+            <div class="d-grid gap-2 mt-4">
+              <button type="submit" class="btn btn-primary" id="register-submit" [disabled]="busy()">{{ busy() ? 'Création du compte…' : 'Créer mon compte' }}</button>
+            </div>
+
+            <p class="text-center small mt-3 mb-0">
+              Déjà inscrit ? <a href="#/login">Connectez-vous</a>
+            </p>
+          </form>
+        }
+      </div>
+    </div>
+  </div>
+</section>

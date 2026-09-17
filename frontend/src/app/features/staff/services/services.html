@@ -1,0 +1,178 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Services</h1>
+      <p class="text-muted mb-0">Construisez le catalogue de services proposés.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" [hidden]="!canCreate" (click)="openCreate()"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouveau service</button>
+  </div>
+
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="services-tab-active" data-bs-toggle="tab" data-bs-target="#services-pane-active" type="button" role="tab">Actifs</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="services-tab-archived" data-bs-toggle="tab" data-bs-target="#services-pane-archived" type="button" role="tab" (click)="onArchivedTabClick()">Archivés</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="services-pane-active" role="tabpanel">
+      <div id="services-active-content">
+        @if (activeLoading()) {
+          <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des services…</span></div>
+        } @else if (activeError()) {
+          <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ activeError() }}</div>
+        } @else if (services().length === 0) {
+          <div class="empty-state"><p class="mb-0">Aucun service actif.</p></div>
+        } @else {
+          <div class="card"><div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Nom</th><th class="d-none d-md-table-cell">Catégorie</th><th>Description</th><th>État</th><th class="d-none d-lg-table-cell">Mis à jour</th><th class="text-end">Actions</th></tr></thead>
+              <tbody>
+                @for (service of visibleActive(); track service.publicId) {
+                  <tr>
+                    <td data-label="Nom"><span class="fw-semibold">{{ service.name }}</span></td>
+                    <td data-label="Catégorie" class="d-none d-md-table-cell">{{ service.category || '—' }}</td>
+                    <td data-label="Description">{{ service.description || '—' }}</td>
+                    <td data-label="État"><span [class]="service.archived | archivedBadgeClass">{{ service.archived | archivedLabel }}</span></td>
+                    <td data-label="Mis à jour" class="d-none d-lg-table-cell small text-muted">{{ service.updatedAt | formatDateTime }}</td>
+                    <td data-label="Actions" class="text-end text-nowrap">
+                      @if (canShowActions) {
+                        @if (service.archived) {
+                          @if (canRestore) {
+                            <button class="btn btn-sm btn-outline-success restore-service-btn" (click)="setArchived(service.publicId, false)">Restaurer</button>
+                          }
+                          @if (canDelete) {
+                            <button class="btn btn-sm btn-outline-danger delete-service-btn" (click)="removeService(service.publicId)">Supprimer</button>
+                          }
+                        } @else {
+                          @if (canUpdate) {
+                            <button class="btn btn-sm btn-outline-primary edit-service-btn" (click)="openEdit(service.publicId)">Modifier</button>
+                          }
+                          @if (canArchive) {
+                            <button class="btn btn-sm btn-outline-warning archive-service-btn" (click)="setArchived(service.publicId, true)">Archiver</button>
+                          }
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+                @if (hasMoreActive()) {
+                  <tr #activeSentinel data-sentinel="active" aria-hidden="true" style="height:1px;"><td colspan="6"></td></tr>
+                }
+              </tbody>
+            </table>
+          </div></div>
+        }
+      </div>
+    </div>
+    <div class="tab-pane fade" id="services-pane-archived" role="tabpanel">
+      <div id="services-archived-content">
+        @if (archivedLoading()) {
+          <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des services archivés…</span></div>
+        } @else if (archivedError()) {
+          <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ archivedError() }}</div>
+        } @else if (archivedDenied()) {
+          <div class="empty-state"><p class="mb-0">Consultation des archives non autorisée pour ce profil.</p></div>
+        } @else if (archived() !== null && archived()!.length === 0) {
+          <div class="empty-state"><p class="mb-0">Aucun service archivé.</p></div>
+        } @else if (archived() !== null) {
+          <div class="card"><div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Nom</th><th class="d-none d-md-table-cell">Catégorie</th><th>Description</th><th>État</th><th class="d-none d-lg-table-cell">Mis à jour</th><th class="text-end">Actions</th></tr></thead>
+              <tbody>
+                @for (service of visibleArchived(); track service.publicId) {
+                  <tr>
+                    <td data-label="Nom"><span class="fw-semibold">{{ service.name }}</span></td>
+                    <td data-label="Catégorie" class="d-none d-md-table-cell">{{ service.category || '—' }}</td>
+                    <td data-label="Description">{{ service.description || '—' }}</td>
+                    <td data-label="État"><span [class]="service.archived | archivedBadgeClass">{{ service.archived | archivedLabel }}</span></td>
+                    <td data-label="Mis à jour" class="d-none d-lg-table-cell small text-muted">{{ service.updatedAt | formatDateTime }}</td>
+                    <td data-label="Actions" class="text-end text-nowrap">
+                      @if (canShowActions) {
+                        @if (service.archived) {
+                          @if (canRestore) {
+                            <button class="btn btn-sm btn-outline-success restore-service-btn" (click)="setArchived(service.publicId, false)">Restaurer</button>
+                          }
+                          @if (canDelete) {
+                            <button class="btn btn-sm btn-outline-danger delete-service-btn" (click)="removeService(service.publicId)">Supprimer</button>
+                          }
+                        } @else {
+                          @if (canUpdate) {
+                            <button class="btn btn-sm btn-outline-primary edit-service-btn" (click)="openEdit(service.publicId)">Modifier</button>
+                          }
+                          @if (canArchive) {
+                            <button class="btn btn-sm btn-outline-warning archive-service-btn" (click)="setArchived(service.publicId, true)">Archiver</button>
+                          }
+                        }
+                      }
+                    </td>
+                  </tr>
+                }
+                @if (hasMoreArchived()) {
+                  <tr #archivedSentinel data-sentinel="archived" aria-hidden="true" style="height:1px;"><td colspan="6"></td></tr>
+                }
+              </tbody>
+            </table>
+          </div></div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale création / édition -->
+  <div class="modal fade" id="service-modal" tabindex="-1" aria-hidden="true" #serviceModal>
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="service-form" novalidate (ngSubmit)="onFormSubmit()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="service-modal-title">{{ modalTitle() }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div id="service-alert">
+              @if (formAlert()) {
+                <div class="alert alert-{{ formAlert()!.type }} py-2" role="alert">{{ formAlert()!.message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="service-name">Nom</label>
+              <input class="form-control" id="service-name" name="name" required maxlength="150"
+                     [disabled]="formBusy()"
+                     [ngModel]="formName()" (ngModelChange)="formName.set($event)"
+                     [class.is-invalid]="!!formErrors['name']" />
+              <div class="form-field-error">{{ formErrors['name'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="service-category">Catégorie</label>
+              <input class="form-control" id="service-category" name="category" maxlength="100"
+                     [disabled]="formBusy()"
+                     [ngModel]="formCategory()" (ngModelChange)="formCategory.set($event)"
+                     [class.is-invalid]="!!formErrors['category']" />
+              <div class="form-field-error">{{ formErrors['category'] }}</div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="service-description">Description</label>
+              <textarea class="form-control" id="service-description" name="description" rows="3" maxlength="1000"
+                        [disabled]="formBusy()"
+                        [ngModel]="formDescription()" (ngModelChange)="formDescription.set($event)"
+                        [class.is-invalid]="!!formErrors['description']"></textarea>
+              <div class="form-field-error">{{ formErrors['description'] }}</div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="service-submit" [disabled]="formBusy()">
+              @if (formBusy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enregistrement…
+              } @else {
+                Enregistrer
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

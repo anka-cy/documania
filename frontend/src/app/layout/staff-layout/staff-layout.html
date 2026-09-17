@@ -1,0 +1,103 @@
+<div class="staff-layout">
+  <a class="skip-link" href="#layout-content">Aller au contenu</a>
+  <aside id="staff-sidebar" class="staff-layout__sidebar d-none d-lg-block" aria-label="Navigation portail staff">
+    <div class="sidebar-header">
+      <div class="app-topbar__brand">
+        <img src="assets/images/logo.png" alt="Logo Documania" />
+        <span>Documania</span>
+      </div>
+      <button class="js-sidebar-toggle" type="button"
+              aria-label="Épingler le menu" title="Épingler le menu">
+        <i class="bi bi-record" aria-hidden="true"></i>
+      </button>
+    </div>
+    <nav>
+      @for (section of navSections; track section.title) {
+        <div class="sidebar-nav__section-title">{{ section.title }}</div>
+        <ul class="sidebar-nav" role="list">
+          @for (item of section.items; track item.href) {
+            <li class="nav-item">
+              <a class="sidebar-nav__link" [class.is-active]="isActive(item.href)" href="{{ item.href }}"
+                 aria-current="{{ isActive(item.href) ? 'page' : 'false' }}">
+                <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+                <span>{{ item.label }}</span>
+              </a>
+            </li>
+          }
+        </ul>
+      }
+    </nav>
+  </aside>
+  <div class="staff-layout__body">
+    <div class="app-topbar-wrapper">
+      <header class="app-topbar">
+        <div class="d-flex align-items-center w-100 gap-2">
+          <button class="js-sidebar-expand" type="button"
+                  aria-label="Afficher le menu" title="Afficher le menu">
+            <i class="bi bi-record" aria-hidden="true"></i>
+          </button>
+          <button class="btn btn-outline-secondary btn-sm d-lg-none" type="button"
+                  data-bs-toggle="offcanvas" data-bs-target="#staff-nav-drawer"
+                  aria-controls="staff-nav-drawer" aria-expanded="false"
+                  aria-label="Ouvrir le menu de navigation">
+            <i class="bi bi-list" aria-hidden="true"></i>
+          </button>
+          <span class="app-topbar__brand d-lg-none">
+            <img src="assets/images/logo.png" alt="Logo Documania" />
+            <span>Documania</span>
+          </span>
+          <span class="fw-semibold me-auto d-none d-sm-inline">Portail {{ admin ? 'administrateur' : 'staff' }}</span>
+          <span class="me-auto d-sm-none"></span>
+          <div id="notification-bell-container">
+            <app-staff-notification-bell />
+          </div>
+          <div class="dropdown">
+            <button class="btn btn-outline-secondary btn-sm dropdown-toggle app-topbar__user-toggle text-truncate" type="button"
+                    data-bs-toggle="dropdown" aria-expanded="false">
+              {{ email }}
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="#/staff/profile">Mon profil</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><button class="dropdown-item text-danger js-logout" type="button">Se déconnecter</button></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+    </div>
+    <main id="layout-content" class="staff-layout__content">
+      <router-outlet />
+    </main>
+    <footer class="app-footer text-center">
+      © {{ year }} Documania
+    </footer>
+  </div>
+  <div class="offcanvas offcanvas-start offcanvas--nav" tabindex="-1" id="staff-nav-drawer"
+       aria-labelledby="staff-nav-drawer-label">
+    <div class="offcanvas-header border-bottom">
+      <div class="app-topbar__brand" id="staff-nav-drawer-label">
+        <img src="assets/images/logo.png" alt="Logo Documania" />
+        <span>Documania</span>
+      </div>
+      <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Fermer"></button>
+    </div>
+    <div class="offcanvas-body">
+      <nav>
+        @for (section of navSections; track section.title) {
+          <div class="sidebar-nav__section-title">{{ section.title }}</div>
+          <ul class="sidebar-nav" role="list">
+            @for (item of section.items; track item.href) {
+              <li class="nav-item">
+                <a class="sidebar-nav__link" [class.is-active]="isActive(item.href)" href="{{ item.href }}"
+                   aria-current="{{ isActive(item.href) ? 'page' : 'false' }}">
+                  <i class="bi {{ item.icon }}" aria-hidden="true"></i>
+                  <span>{{ item.label }}</span>
+                </a>
+              </li>
+            }
+          </ul>
+        }
+      </nav>
+    </div>
+  </div>
+</div>

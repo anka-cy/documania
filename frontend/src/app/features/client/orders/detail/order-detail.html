@@ -1,0 +1,56 @@
+<section class="py-3">
+  <nav aria-label="Fil d'Ariane" class="mb-3 small">
+    <a href="#/client/orders">Mes commandes</a> <span class="text-muted">/</span>
+    <span id="order-breadcrumb" class="text-muted">{{ breadcrumbLabel() }}</span>
+  </nav>
+  <div id="order-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement de la commande…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (notFound()) {
+      <div class="empty-state"><p class="mb-0">Cette commande est introuvable ou ne vous appartient pas.</p></div>
+    } @else {
+      @if (order(); as o) {
+      <div class="card mb-4">
+        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
+          <span class="fw-semibold">Commande {{ o.orderNumber }}</span>
+          <span><span class="{{ o.status | statusBadgeClass }}">{{ o.status | orderStatusLabel }}</span></span>
+        </div>
+        <div class="card-body">
+          @if (o.status === 'CANCELLED' && o.cancelledAt) {
+            <div class="alert alert-warning py-2">Annulée le {{ o.cancelledAt | formatDateTime }}</div>
+          }
+          @if (o.status === 'REJECTED' && o.rejectionReason) {
+            <div class="alert alert-danger py-2"><strong>Motif du rejet :</strong> {{ o.rejectionReason }}</div>
+          }
+          <dl class="row mb-0">
+            <dt class="col-sm-4">Service</dt>
+            <dd class="col-sm-8">{{ dash(o.serviceName) }}</dd>
+            <dt class="col-sm-4">Offre</dt>
+            <dd class="col-sm-8">{{ dash(o.offerName) }}</dd>
+            <dt class="col-sm-4">Durée</dt>
+            <dd class="col-sm-8">{{ o.durationMonths | formatDuration }}</dd>
+            <dt class="col-sm-4">Utilisateurs</dt>
+            <dd class="col-sm-8">{{ numOrDash(o.numberOfUsers) }}</dd>
+            <dt class="col-sm-4">Montant</dt>
+            <dd class="col-sm-8 fw-semibold">{{ o.price | formatPrice }}</dd>
+            <dt class="col-sm-4">Date de la commande</dt>
+            <dd class="col-sm-8">{{ o.createdAt | formatDate }}</dd>
+          </dl>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2">
+        @if (o.status === 'PENDING') {
+          <button class="btn btn-outline-danger" id="order-cancel-btn" type="button" [disabled]="busy()" (click)="onCancel()">Annuler la commande</button>
+        }
+        @if (o.status === 'CONFIRMED') {
+          <a class="btn btn-outline-primary" href="#/client/orders/{{ o.publicId }}/invoice">Consulter la facture</a>
+        }
+        <a class="btn btn-outline-secondary" href="#/client/orders">Retour aux commandes</a>
+      </div>
+      }
+    }
+  </div>
+</section>

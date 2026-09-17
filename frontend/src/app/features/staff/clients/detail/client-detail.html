@@ -1,0 +1,120 @@
+<section class="py-3">
+  <nav aria-label="Fil d'Ariane" class="mb-3 small">
+    <a href="#/staff/clients">Clients</a> <span class="text-muted">/</span>
+    <span id="client-breadcrumb" class="text-muted">{{ breadcrumb() }}</span>
+  </nav>
+
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <span>Informations</span>
+          <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#client-edit-modal" [hidden]="editButtonHidden()">Modifier</button>
+        </div>
+        <div class="card-body" id="client-detail-info">
+          @if (loading()) {
+            <div class="loading-block" role="status" aria-live="polite">
+              <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+              <span>Chargement du client…</span>
+            </div>
+          } @else if (error()) {
+            <div class="inline-error" role="alert">
+              <span class="fw-semibold">Erreur :</span> {{ error() }}
+            </div>
+          } @else {
+            <dl class="mb-2">
+              @for (row of infoRows(); track row.label) {
+                <div class="d-flex justify-content-between py-2 border-bottom">
+                  <dt class="text-muted mb-0">{{ row.label }}</dt>
+                  @if (row.badge) {
+                    <dd class="mb-0"><span class="{{ row.badge!.klass }}">{{ row.badge!.label }}</span></dd>
+                  } @else {
+                    <dd class="mb-0">{{ row.value }}</dd>
+                  }
+                </div>
+              }
+            </dl>
+          }
+        </div>
+      </div>
+
+      <div class="card mt-4" id="client-account-card" [hidden]="accountCardHidden()">
+        <div class="card-header">Compte utilisateur</div>
+        <div class="card-body" id="client-detail-account">
+          @if (!loading() && !error() && client() && !client().emailVerified) {
+            <p class="text-muted small mb-3">
+              Ce compte est créé sans mot de passe utilisable : l'activation est obligatoire. Envoyez un lien d'activation par e-mail afin que le client définisse lui-même son mot de passe et active son compte.
+            </p>
+            <button class="btn btn-sm btn-outline-primary" id="client-activation-btn" [hidden]="!isAdmin" [disabled]="activationBusy()" (click)="onSendActivation()">
+              Envoyer le lien d'activation
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+
+    <div class="col-lg-5">
+      <div class="card">
+        <div class="card-header">Actions</div>
+        <div class="card-body d-grid gap-2" id="client-detail-actions">
+          @if (error()) {
+            <a class="btn btn-outline-secondary" href="#/staff/clients">Retour aux clients</a>
+          } @else if (client()) {
+            @if (canDelete || canArchive || canRestore) {
+              @if (client().archived) {
+                @if (canRestore) {
+                  <button class="btn btn-outline-success" id="client-restore-btn" (click)="onRestore()">Restaurer le client</button>
+                }
+                @if (canDelete) {
+                  <button class="btn btn-outline-danger" id="client-delete-btn" (click)="onDelete()">Supprimer définitivement</button>
+                }
+              } @else if (canArchive) {
+                <button class="btn btn-outline-warning" id="client-archive-btn" (click)="onArchive()">Archiver le client</button>
+              }
+            }
+            <a class="btn btn-outline-secondary" href="#/staff/clients">Retour aux clients</a>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale d'édition -->
+  <div class="modal fade" id="client-edit-modal" #editModal tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="client-edit-form" novalidate (ngSubmit)="onEdit()">
+          <div class="modal-header">
+            <h5 class="modal-title">Modifier le client</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer" [disabled]="busy()"></button>
+          </div>
+          <div class="modal-body">
+            <div id="client-edit-alert">
+              @if (editAlert()) {
+                <div class="alert alert-{{ editAlert()!.type }} py-2" role="alert">{{ editAlert()!.message }}</div>
+              }
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-6"><label class="form-label" for="edit-client-first-name">Prénom</label><input class="form-control" id="edit-client-first-name" name="firstName" required maxlength="100" [ngModel]="firstName()" (ngModelChange)="firstName.set($event)" [class.is-invalid]="!!errors['firstName']" [disabled]="busy()" /><div class="form-field-error">{{ errors['firstName'] }}</div></div>
+              <div class="col-sm-6"><label class="form-label" for="edit-client-last-name">Nom</label><input class="form-control" id="edit-client-last-name" name="lastName" required maxlength="100" [ngModel]="lastName()" (ngModelChange)="lastName.set($event)" [class.is-invalid]="!!errors['lastName']" [disabled]="busy()" /><div class="form-field-error">{{ errors['lastName'] }}</div></div>
+              <div class="col-12"><label class="form-label" for="edit-client-company">Entreprise</label><input class="form-control" id="edit-client-company" name="companyName" required maxlength="200" [ngModel]="companyName()" (ngModelChange)="companyName.set($event)" [class.is-invalid]="!!errors['companyName']" [disabled]="busy()" /><div class="form-field-error">{{ errors['companyName'] }}</div></div>
+              <div class="col-sm-6"><label class="form-label" for="edit-client-phone">Téléphone</label><input class="form-control" id="edit-client-phone" name="phone" maxlength="30" [ngModel]="phone()" (ngModelChange)="phone.set($event)" [class.is-invalid]="!!errors['phone']" [disabled]="busy()" /><div class="form-field-error">{{ errors['phone'] }}</div></div>
+              <div class="col-sm-6"><label class="form-label" for="edit-client-sector">Secteur</label><input class="form-control" id="edit-client-sector" name="sector" maxlength="100" [ngModel]="sector()" (ngModelChange)="sector.set($event)" [class.is-invalid]="!!errors['sector']" [disabled]="busy()" /><div class="form-field-error">{{ errors['sector'] }}</div></div>
+              <div class="col-12"><label class="form-label" for="edit-client-address">Adresse</label><input class="form-control" id="edit-client-address" name="address" maxlength="250" [ngModel]="address()" (ngModelChange)="address.set($event)" [class.is-invalid]="!!errors['address']" [disabled]="busy()" /><div class="form-field-error">{{ errors['address'] }}</div></div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" [disabled]="busy()">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="client-edit-submit" [disabled]="busy()">
+              @if (busy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Enregistrement…
+              } @else {
+                Enregistrer
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

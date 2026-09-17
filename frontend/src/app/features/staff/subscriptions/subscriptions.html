@@ -1,0 +1,55 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Abonnements</h1>
+      <p class="text-muted mb-0">Suivez les souscriptions et leurs périodes.</p>
+    </div>
+  </div>
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <div class="input-group filter-group">
+      <span class="input-group-text"><i class="bi bi-search"></i></span>
+      <input class="form-control" id="subscriptions-search-input" type="search" placeholder="Rechercher un abonnement (client, offre)…"
+             (input)="onSearch($event)" />
+    </div>
+    <select class="form-select filter-select" id="subscriptions-status-filter" (change)="onStatusChange($event)">
+      <option value="">Tous les statuts</option>
+      <option value="ACTIVE">Active</option>
+      <option value="EXPIRED">Expirée</option>
+      <option value="CANCELLED">Annulée</option>
+    </select>
+  </div>
+  <div id="subscriptions-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement des abonnements.</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (items().length === 0) {
+      <div class="empty-state"><p class="mb-0">{{ unfiltered() ? 'Aucun abonnement enregistré.' : 'Aucun abonnement ne correspond à la recherche.' }}</p></div>
+    } @else {
+      <div class="card"><div class="table-responsive table-container">
+        <table class="table table-hover align-middle mb-0">
+          <thead><tr><th>Client</th><th>Offre</th><th class="d-none d-md-table-cell">Période</th><th>Montant</th><th>Statut</th><th class="text-end">Actions</th></tr></thead>
+          <tbody>
+            @for (subscription of items(); track subscription.publicId) {
+              <tr>
+                <td data-label="Client"><span class="fw-semibold">{{ subscription.clientCompanyName || '—' }}</span></td>
+                <td data-label="Offre">{{ latestPeriod(subscription)?.offerName || subscription.offerName || '—' }}</td>
+                <td data-label="Période" class="d-none d-md-table-cell">{{ subscription.startDate | formatDate }} → {{ subscription.endDate | formatDate }}</td>
+                <td data-label="Montant">{{ latestPeriod(subscription)?.price | formatPrice }}</td>
+                <td data-label="Statut"><span [class]="subscription.status | statusBadgeClass">{{ subscription.status | subscriptionStatusLabel }}</span></td>
+                <td data-label="Actions" class="text-end text-nowrap">
+                  @if (admin && subscription.status === 'ACTIVE') {
+                    <button class="btn btn-sm btn-outline-danger cancel-sub-btn" (click)="cancelSubscription(subscription.publicId)">Annuler</button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div></div>
+      <div class="d-flex justify-content-between align-items-center mt-2" id="subscriptions-pager">
+        <app-pagination idPrefix="subscriptions" [page]="page()" [totalPages]="totalPages()" variant="icons" (pageChange)="onPageChange($event)" />
+      </div>
+    }
+  </div>
+</section>

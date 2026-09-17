@@ -1,0 +1,75 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Catalogue</h1>
+      <p class="text-muted mb-0">Découvrez nos services et leurs offres.</p>
+    </div>
+  </div>
+  <div id="catalogue-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement du catalogue…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (!services().length) {
+      <div class="empty-state"><p class="mb-0">Aucun service n'est encore disponible dans le catalogue.</p></div>
+    } @else {
+      @for (service of services(); track service.publicId) {
+        <div class="card mb-4">
+          <div class="card-header d-flex flex-wrap align-items-center gap-3">
+            <div class="d-flex align-items-baseline flex-wrap gap-2">
+              <strong>{{ service.name }}</strong>
+              @if (service.category) {
+                <span class="badge text-bg-secondary">{{ service.category }}</span>
+              }
+            </div>
+          </div>
+          @if (service.description) {
+            <div class="card-body pb-0 text-muted small">{{ service.description }}</div>
+          }
+          <div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th>Offre</th>
+                  <th class="d-none d-md-table-cell">Description</th>
+                  <th>Prix</th>
+                  <th>Durée</th>
+                  <th>Utilisateurs</th>
+                  <th class="d-none d-lg-table-cell">Période commerciale</th>
+                  <th class="text-end">Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (offer of service.offers; track offer.publicId) {
+                  <tr>
+                    <td data-label="Offre"><a class="fw-semibold" href="#/client/offers/{{ offer.publicId }}">{{ offer.name }}</a></td>
+                    <td data-label="Description" class="d-none d-md-table-cell">{{ offer.description || '—' }}</td>
+                    <td data-label="Prix" class="text-nowrap fw-semibold text-primary">{{ offer.price | formatPrice }}</td>
+                    <td data-label="Durée">{{ offer.durationMonths | formatDuration }}</td>
+                    <td data-label="Utilisateurs">{{ offer.numberOfUsers }}</td>
+                    <td data-label="Période" class="d-none d-lg-table-cell">{{ offer.commercialStartDate | formatDateRange: offer.commercialEndDate }}</td>
+                    <td data-label="Action" class="text-end text-nowrap">
+                      <button class="btn btn-sm btn-primary order-offer-btn"
+                              [attr.data-service]="service.name"
+                              [attr.data-offer-id]="offer.publicId"
+                              [attr.data-offer-name]="offer.name"
+                              [attr.data-offer-price]="offer.price"
+                              [disabled]="orderingOfferId() === offer.publicId"
+                              (click)="order(offer)">
+                        @if (orderingOfferId() === offer.publicId) {
+                          <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Envoi…
+                        } @else {
+                          Commander
+                        }
+                      </button>
+                    </td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+      }
+    }
+  </div>
+</section>

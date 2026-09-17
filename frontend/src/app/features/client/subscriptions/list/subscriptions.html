@@ -1,0 +1,105 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Mes abonnements</h1>
+      <p class="text-muted mb-0">Vos souscriptions actives et passées.</p>
+    </div>
+  </div>
+  <div id="subscriptions-content">
+    @if (loading()) {
+      <div class="loading-block" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm" aria-hidden="true"></div><span>Chargement de vos abonnements…</span></div>
+    } @else if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (empty()) {
+      <div class="empty-state"><p class="mb-0">Aucun abonnement. Découvrez le catalogue et souscrivez !</p></div>
+    } @else {
+      <div class="row g-3">
+        @for (sub of subscriptions().slice(0, visibleCount()); track sub.publicId) {
+          @let cp = currentPeriod(sub);
+          <div class="col-md-6 col-xl-4">
+            <div class="card h-100">
+              <div class="card-body d-flex flex-column">
+                <div class="d-flex justify-content-between align-items-start mb-2">
+                  <span class="{{ sub.status | statusBadgeClass }}">{{ sub.status | subscriptionStatusLabel }}</span>
+                </div>
+                <h2 class="h5 mb-1">{{ cp?.offerName || sub.offerName || 'Abonnement' }}</h2>
+                <div class="text-muted small mb-3">{{ cp?.serviceName || '' }}</div>
+                <dl class="row small mb-3">
+                  <dt class="col-6">Début</dt>
+                  <dd class="col-6">{{ sub.startDate | formatDate }}</dd>
+                  <dt class="col-6">Fin</dt>
+                  <dd class="col-6">{{ sub.endDate | formatDate }}</dd>
+                  <dt class="col-6">Montant périodique</dt>
+                  <dd class="col-6">{{ (cp ? cp.price : null) | formatPrice }}</dd>
+                </dl>
+                @if (sub.status === 'ACTIVE') {
+                  <div class="d-flex flex-wrap gap-2 mb-2">
+                    <button class="btn btn-outline-danger btn-sm quick-ticket-btn" type="button"
+                            [attr.data-subscription-id]="sub.publicId"
+                            [attr.data-service]="cp?.serviceName || sub.serviceName || ''"
+                            data-category="SERVICE_DOWN" data-priority="HIGH"
+                            (click)="openQuickTicket(sub, 'SERVICE_DOWN', 'HIGH')">
+                      <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> Signaler une panne
+                    </button>
+                    <button class="btn btn-outline-primary btn-sm quick-ticket-btn" type="button"
+                            [attr.data-subscription-id]="sub.publicId"
+                            [attr.data-service]="cp?.serviceName || sub.serviceName || ''"
+                            data-category="MODULE_CUSTOMIZATION" data-priority="MEDIUM"
+                            (click)="openQuickTicket(sub, 'MODULE_CUSTOMIZATION', 'MEDIUM')">
+                      <i class="bi bi-sliders" aria-hidden="true"></i> Demander une modification
+                    </button>
+                  </div>
+                }
+                <a class="btn btn-outline-secondary btn-sm mt-auto align-self-start" href="#/client/subscriptions/{{ sub.publicId }}">Consulter le détail</a>
+              </div>
+            </div>
+          </div>
+        }
+        <div #sentinel class="scroll-sentinel" aria-hidden="true" style="height: 1px;"></div>
+      </div>
+    }
+  </div>
+
+  <!-- Modale de création rapide de ticket depuis un abonnement -->
+  <div class="modal fade" id="ticket-modal" #ticketModal tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="ticket-form" novalidate (ngSubmit)="onTicketSubmit()">
+          <div class="modal-header">
+            <h5 class="modal-title" id="ticket-modal-title">{{ modalTitle() }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+          </div>
+          <div class="modal-body">
+            <div id="ticket-alert">
+              @if (alert()) {
+                <div class="alert alert-{{ alert()!.type }} py-2" role="alert">{{ alert()!.message }}</div>
+              }
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="ticket-subject">Objet</label>
+              <input class="form-control" id="ticket-subject" name="subject" type="text" maxlength="255" required [(ngModel)]="subject" />
+            </div>
+            <div class="mb-3">
+              <label class="form-label" for="ticket-description">Description</label>
+              <textarea class="form-control" id="ticket-description" name="description" rows="4" minlength="5" maxlength="5000" required [(ngModel)]="desc" (input)="onDescInput($event)"></textarea>
+              <div class="d-flex justify-content-between mt-1">
+                <small class="text-danger" [class.d-none]="!showDescError()" id="ticket-error">La description doit contenir au moins 5 caractères.</small>
+                <small class="text-muted ms-auto"><span id="ticket-count">{{ descLen() }}</span> / 5000</small>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="ticket-submit" [disabled]="submitDisabled() || submitting()">
+              @if (submitting()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création…
+              } @else {
+                Créer le ticket
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

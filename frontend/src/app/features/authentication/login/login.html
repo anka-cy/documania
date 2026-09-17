@@ -1,0 +1,76 @@
+<section class="auth-section">
+  <div class="auth-split">
+    <div class="auth-split__panel">
+      <div class="auth-card p-4">
+        <div class="text-center mb-4">
+          <h1 class="h4 mb-0">Connexion à Documania</h1>
+          <p class="text-muted mb-0">Accédez à votre espace client.</p>
+        </div>
+
+        <div id="login-alert">
+          @if (alert()) {
+            <div class="alert alert-{{ alert()!.type }} py-2" role="alert">{{ alert()!.message }}</div>
+          }
+        </div>
+
+        <form id="login-form" novalidate (ngSubmit)="onSubmit()">
+          <div class="mb-3">
+            <label class="form-label" for="login-email">Adresse e-mail</label>
+            <input
+              type="email"
+              class="form-control"
+              id="login-email"
+              name="email"
+              autocomplete="username"
+              maxlength="255"
+              required
+              placeholder="vous@entreprise.fr"
+              [(ngModel)]="email"
+              [class.is-invalid]="!!errors['email']"
+            />
+            <div class="form-field-error">{{ errors['email'] }}</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label" for="login-password">Mot de passe</label>
+            <div class="position-relative">
+              <input
+                [type]="showPassword() ? 'text' : 'password'"
+                class="form-control"
+                id="login-password"
+                name="password"
+                autocomplete="current-password"
+                required
+                placeholder="••••••••••••"
+                [(ngModel)]="password"
+                [class.is-invalid]="!!errors['password']"
+              />
+              <button
+                type="button"
+                class="btn btn-sm btn-link position-absolute top-50 end-0 translate-middle-y password-toggle"
+                aria-label="Afficher ou masquer le mot de passe"
+                (click)="showPassword.set(!showPassword())"
+              >{{ showPassword() ? 'Masquer' : 'Afficher' }}</button>
+            </div>
+            <div class="form-field-error">{{ errors['password'] }}</div>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary" id="login-submit" [disabled]="busy()">
+              @if (busy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Connexion…
+              } @else {
+                Se connecter
+              }
+            </button>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center mt-3">
+            <a href="#/password-reset">Mot de passe oublié ?</a>
+            <a href="#/register">Créer un compte</a>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,12 @@
+import { Injectable, inject } from '@angular/core';
+
+import { ApiService } from '../../../../core/api/api.service';
+
+@Injectable({ providedIn: 'root' })
+export class SubscriptionDetailService {
+  private readonly api = inject(ApiService);
+
+  fetchSubscriptions(): Promise<any> {
+    return this.api.apiFetch('/client/subscriptions');
+  }
+}

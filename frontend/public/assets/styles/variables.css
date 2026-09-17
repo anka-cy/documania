@@ -1,0 +1,67 @@
+/*
+  =============================================================================
+  documania — Variables globales
+  =============================================================================
+  Point unique des couleurs, espacements, rayons et ombres du thème.
+  Le bleu #3498db et le fond gris clair reprennent l'identité visuelle v1.
+  =============================================================================
+*/
+
+:root {
+  /* Identité visuelle (reprise de la v1) */
+  --color-primary: #3498db;
+  /* accent principal */
+  --color-primary-dark: #2980b9;
+  /* survol des éléments primaires */
+  --color-primary-light: #dbeafe;
+  /* fonds des badges/éléments sélectionnés */
+
+  /* Neutres */
+  --color-bg: #f3f2f7;
+  /* fond de contenu gris très clair */
+  --color-surface: #ffffff;
+  /* cartes, tableaux, modales */
+  --color-border: #e4e3ed;
+  --color-text: #2d2d44;
+  --color-text-muted: #6b6b80;
+  --color-heading: #1f1f33;
+
+  /* Palette utilitaire (cohérente avec Bootstrap) */
+  --color-success: #28a745;
+  --color-danger: #dc3545;
+  --color-warning: #d97706;
+  --color-info: #17a2b8;
+
+  /* Sidebar portail staff (Pro App clair) */
+  --color-sidebar-bg: #ffffff;
+  /* fond clair */
+  --color-sidebar-text: #45455a;
+  --color-sidebar-text-muted: #9494a6;
+  --color-sidebar-active: #e8f1fb;
+  /* pilule active bleu clair */
+  --color-sidebar-active-text: #2563eb;
+  /* dégradé clair subtil */
+  --color-sidebar-gradient-start: #ffffff;
+  --color-sidebar-gradient-end: #f7f8fb;
+
+  /* Vitesses de transition */
+  --transition-fast: 0.15s;
+  --transition-speed: 0.25s;
+
+  /* Espacements */
+  --space-1: 0.15rem;
+  --space-2: 0.35rem;
+  --space-3: 0.65rem;
+  --space-4: 0.9rem;
+  --space-5: 1.25rem;
+
+  /* Rayons et ombres */
+  --radius-sm: 0.2rem;
+  --radius-md: 0.35rem;
+  --radius-lg: 0.45rem;
+  --radius-pill: 999px;
+
+  /* Largeurs de layout */
+  --sidebar-width: 235px;
+  --navbar-height: 48px;
+}

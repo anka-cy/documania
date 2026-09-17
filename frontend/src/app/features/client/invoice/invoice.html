@@ -1,0 +1,55 @@
+<section class="py-3">
+  <div id="invoice-actions" class="d-flex gap-2 mb-3">
+    <a class="btn btn-outline-secondary" href="#/client/orders">
+      <i class="bi bi-arrow-left me-1"></i>Retour aux commandes
+    </a>
+  </div>
+  <div id="invoice-content">
+    @if (error()) {
+      <div class="inline-error" role="alert"><span class="fw-semibold">Erreur :</span> {{ error() }}</div>
+    } @else if (invoice()) {
+      <article class="invoice-doc card p-4 mx-auto" style="max-width: 800px;">
+        <header class="d-flex justify-content-between align-items-start mb-4 border-bottom pb-3">
+          <div>
+            <h1 class="h3 mb-1">FACTURE {{ invoice()!.invoiceNumber || '' }}</h1>
+            <p class="text-muted small mb-0">Émise le {{ invoice()!.issuedAt | formatDate }}</p>
+            <p class="text-muted small mb-0">Commande n° {{ invoice()!.orderNumber || '' }}</p>
+          </div>
+          <div class="text-end">
+            <strong class="d-block">Documania</strong>
+            <span class="text-muted small">Services d'abonnement</span>
+          </div>
+        </header>
+
+        <section class="mb-4">
+          <h2 class="h6 text-muted text-uppercase mb-2">Client</h2>
+          <p class="fw-semibold mb-0">{{ invoice()!.clientCompanyName || '' }}</p>
+        </section>
+
+        <table class="table table-bordered mb-4">
+          <thead class="table-light">
+            <tr>
+              <th>Désignation</th>
+              <th>Période</th>
+              <th class="text-end">Tarif</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>{{ invoice()!.serviceName || '' }} — {{ invoice()!.offerName || '' }}</td>
+              <td>{{ invoice()!.durationMonths ? invoice()!.durationMonths + ' mois' : '—' }}</td>
+              <td class="text-end">{{ invoice()!.price | formatPrice }}</td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr><th colspan="2" class="text-end">Total</th><td class="text-end fw-bold">{{ invoice()!.price | formatPrice }}</td></tr>
+          </tfoot>
+        </table>
+
+        <footer class="invoice-doc__legal small text-muted">
+          Facture générée automatiquement par Documania.
+        </footer>
+      </article>
+    }
+  </div>
+</section>

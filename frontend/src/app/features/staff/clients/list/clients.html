@@ -1,0 +1,188 @@
+<section class="py-3">
+  <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mb-4">
+    <div>
+      <h1 class="h3 mb-1">Clients</h1>
+      <p class="text-muted mb-0">Gérez les clients et leurs entreprises.</p>
+    </div>
+    <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#client-create-modal" [hidden]="!canCreate"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nouveau client</button>
+  </div>
+
+  <div class="input-group mb-3">
+    <span class="input-group-text"><i class="bi bi-search"></i></span>
+    <input class="form-control" id="clients-search-input" type="search" placeholder="Rechercher un client (nom, entreprise, e-mail, téléphone, secteur)…"
+           [ngModel]="searchText()" (ngModelChange)="onSearchInput($event)" />
+  </div>
+
+  <ul class="nav nav-tabs mb-3" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="tab-active" data-bs-toggle="tab" data-bs-target="#pane-active" type="button" role="tab">Actifs</button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="tab-archived" #tabArchived data-bs-toggle="tab" data-bs-target="#pane-archived" type="button" role="tab">Archivés</button>
+    </li>
+  </ul>
+
+  <div class="tab-content">
+    <div class="tab-pane fade show active" id="pane-active" role="tabpanel">
+      <div id="clients-active-content">
+        @if (activeLoading()) {
+          <div class="loading-block" role="status" aria-live="polite">
+            <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+            <span>Chargement des clients…</span>
+          </div>
+        } @else if (activeError()) {
+          <div class="inline-error" role="alert">
+            <span class="fw-semibold">Erreur :</span> {{ activeError() }}
+          </div>
+        } @else if (activeFiltered().length) {
+          <div class="card"><div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Entreprise</th><th class="d-none d-md-table-cell">E-mail</th><th class="d-none d-lg-table-cell">Téléphone</th><th class="d-none d-md-table-cell">Secteur</th><th class="text-end">Action</th></tr></thead>
+              <tbody>
+                @for (client of visibleActive(); track client.publicId) {
+                  <tr>
+                    <td data-label="Entreprise">
+                      <a class="fw-semibold" [href]="'#/staff/clients/' + client.publicId">{{ client.companyName }}</a>
+                      <div class="small text-muted">{{ client.firstName }} {{ client.lastName }}</div>
+                    </td>
+                    <td data-label="E-mail" class="d-none d-md-table-cell">{{ dash(client.email) }}</td>
+                    <td data-label="Téléphone" class="d-none d-lg-table-cell">{{ dash(client.phone) }}</td>
+                    <td data-label="Secteur" class="d-none d-md-table-cell">{{ dash(client.sector) }}</td>
+                    <td data-label="Action" class="text-end"><a class="btn btn-sm btn-outline-secondary" [href]="'#/staff/clients/' + client.publicId">Détail</a></td>
+                  </tr>
+                }
+                @if (moreActive()) {
+                  <tr #activeSentinel class="scroll-sentinel" aria-hidden="true" style="height: 1px"></tr>
+                }
+              </tbody>
+            </table>
+          </div></div>
+        } @else {
+          <div class="empty-state">
+            <p class="mb-0">{{ searchTerm() ? 'Aucun client actif ne correspond à la recherche.' : 'Aucun client actif.' }}</p>
+          </div>
+        }
+      </div>
+    </div>
+    <div class="tab-pane fade" id="pane-archived" role="tabpanel">
+      <div id="clients-archived-content">
+        @if (archivedLoading()) {
+          <div class="loading-block" role="status" aria-live="polite">
+            <div class="spinner-border spinner-border-sm" aria-hidden="true"></div>
+            <span>Chargement des clients archivés…</span>
+          </div>
+        } @else if (archivedError()) {
+          <div class="inline-error" role="alert">
+            <span class="fw-semibold">Erreur :</span> {{ archivedError() }}
+          </div>
+        } @else if (archivedDenied()) {
+          <div class="empty-state">
+            <p class="mb-0">Consultation des archives non autorisée pour ce profil.</p>
+          </div>
+        } @else if (archivedLoaded() && archivedFiltered().length) {
+          <div class="card"><div class="table-responsive table-container">
+            <table class="table table-hover align-middle mb-0">
+              <thead><tr><th>Entreprise</th><th class="d-none d-md-table-cell">E-mail</th><th class="d-none d-lg-table-cell">Téléphone</th><th class="d-none d-md-table-cell">Secteur</th><th class="text-end">Action</th></tr></thead>
+              <tbody>
+                @for (client of visibleArchived(); track client.publicId) {
+                  <tr>
+                    <td data-label="Entreprise">
+                      <a class="fw-semibold" [href]="'#/staff/clients/' + client.publicId">{{ client.companyName }}</a>
+                      <div class="small text-muted">{{ client.firstName }} {{ client.lastName }}</div>
+                    </td>
+                    <td data-label="E-mail" class="d-none d-md-table-cell">{{ dash(client.email) }}</td>
+                    <td data-label="Téléphone" class="d-none d-lg-table-cell">{{ dash(client.phone) }}</td>
+                    <td data-label="Secteur" class="d-none d-md-table-cell">{{ dash(client.sector) }}</td>
+                    <td data-label="Action" class="text-end"><a class="btn btn-sm btn-outline-secondary" [href]="'#/staff/clients/' + client.publicId">Détail</a></td>
+                  </tr>
+                }
+                @if (moreArchived()) {
+                  <tr #archivedSentinel class="scroll-sentinel" aria-hidden="true" style="height: 1px"></tr>
+                }
+              </tbody>
+            </table>
+          </div></div>
+        } @else if (archivedLoaded()) {
+          <div class="empty-state">
+            <p class="mb-0">{{ searchTerm() ? 'Aucun client archivé ne correspond à la recherche.' : 'Aucun client archivé.' }}</p>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  <!-- Modale de création -->
+  <div class="modal fade" id="client-create-modal" #createModal tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-fullscreen-sm-down">
+      <div class="modal-content">
+        <form id="client-create-form" novalidate (ngSubmit)="onCreate()">
+          <div class="modal-header">
+            <h5 class="modal-title">Nouveau client</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer" [disabled]="busy()"></button>
+          </div>
+          <div class="modal-body">
+            <div id="client-create-alert">
+              @if (createAlert()) {
+                <div class="alert alert-{{ createAlert()!.type }} py-2" role="alert">{{ createAlert()!.message }}</div>
+              }
+            </div>
+            <div class="row g-3">
+              <div class="col-sm-6">
+                <label class="form-label" for="new-client-first-name">Prénom</label>
+                <input class="form-control" id="new-client-first-name" name="firstName" required maxlength="100"
+                       [ngModel]="firstName()" (ngModelChange)="firstName.set($event)" [class.is-invalid]="!!errors['firstName']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['firstName'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="new-client-last-name">Nom</label>
+                <input class="form-control" id="new-client-last-name" name="lastName" required maxlength="100"
+                       [ngModel]="lastName()" (ngModelChange)="lastName.set($event)" [class.is-invalid]="!!errors['lastName']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['lastName'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="new-client-company">Entreprise</label>
+                <input class="form-control" id="new-client-company" name="companyName" required maxlength="200"
+                       [ngModel]="companyName()" (ngModelChange)="companyName.set($event)" [class.is-invalid]="!!errors['companyName']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['companyName'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="new-client-email">Adresse e-mail</label>
+                <input class="form-control" type="email" id="new-client-email" name="email" autocomplete="off" required maxlength="255"
+                       [ngModel]="email()" (ngModelChange)="email.set($event)" [class.is-invalid]="!!errors['email']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['email'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="new-client-phone">Téléphone</label>
+                <input class="form-control" id="new-client-phone" name="phone" maxlength="30"
+                       [ngModel]="phone()" (ngModelChange)="phone.set($event)" [class.is-invalid]="!!errors['phone']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['phone'] }}</div>
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label" for="new-client-sector">Secteur</label>
+                <input class="form-control" id="new-client-sector" name="sector" maxlength="100"
+                       [ngModel]="sector()" (ngModelChange)="sector.set($event)" [class.is-invalid]="!!errors['sector']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['sector'] }}</div>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="new-client-address">Adresse</label>
+                <input class="form-control" id="new-client-address" name="address" maxlength="250"
+                       [ngModel]="address()" (ngModelChange)="address.set($event)" [class.is-invalid]="!!errors['address']" [disabled]="busy()" />
+                <div class="form-field-error">{{ errors['address'] }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal" [disabled]="busy()">Annuler</button>
+            <button type="submit" class="btn btn-primary" id="client-create-submit" [disabled]="busy()">
+              @if (busy()) {
+                <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>Création…
+              } @else {
+                Créer le client
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</section>
